@@ -2,20 +2,22 @@ import 'dart:math' as math;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:who_is_this_kansen/catalog/catalog.dart';
+import 'package:who_is_this_kansen/core/theme/kansen_app_theme.dart';
+import 'package:who_is_this_kansen/core/theme/kansen_theme_colors.dart';
+import 'package:who_is_this_kansen/quiz/presentation/bloc/quiz_prompt_cubit.dart';
 
 void main() {
   runApp(const KansenApp());
 }
 
-const _assetRoot = 'research/generated_images';
-
 bool _isDark(BuildContext context) =>
     Theme.of(context).brightness == Brightness.dark;
 
 Color _ink(BuildContext context, [double opacity = 1]) {
-  return (_isDark(context) ? Colors.white : const Color(0xff101820)).withValues(
-    alpha: opacity,
-  );
+  return KansenThemeTokens.of(context).ink.withValues(alpha: opacity);
 }
 
 Color _glass(BuildContext context, {double dark = 0.08, double light = 0.72}) {
@@ -25,44 +27,9 @@ Color _glass(BuildContext context, {double dark = 0.08, double light = 0.72}) {
 }
 
 Color _hairline(BuildContext context) {
-  return (_isDark(context) ? Colors.white : const Color(0xff213044)).withValues(
-    alpha: _isDark(context) ? 0.12 : 0.12,
-  );
-}
-
-Color _rarityAccent(String rarity) {
-  return switch (rarity.toLowerCase()) {
-    'decisive' => const Color(0xff7fd7c6),
-    'ultra rare' => const Color(0xffc9a7ff),
-    'priority' => const Color(0xff7bb6e8),
-    'super rare' => const Color(0xffe4bd67),
-    'elite' => const Color(0xffb7a3d9),
-    'rare' => const Color(0xff86aee8),
-    'normal' => const Color(0xffa7b0b8),
-    _ => const Color(0xffaeb8c2),
-  };
-}
-
-List<Color> _rarityGradient(String rarity) {
-  return switch (rarity.toLowerCase()) {
-    'decisive' => const [
-      Color(0xff7fd7c6),
-      Color(0xff8bb8ff),
-      Color(0xffd1b2ff),
-    ],
-    'ultra rare' => const [
-      Color(0xffffaebc),
-      Color(0xffffe18f),
-      Color(0xff91e6d1),
-      Color(0xffbca7ff),
-    ],
-    'priority' => const [Color(0xff7bb6e8), Color(0xffd6b6ff)],
-    'super rare' => const [Color(0xfff0d083), Color(0xffba8744)],
-    'elite' => const [Color(0xffd1c1ee), Color(0xff9279c2)],
-    'rare' => const [Color(0xffa8c6f3), Color(0xff638fd2)],
-    'normal' => const [Color(0xffc0c7ce), Color(0xff848e98)],
-    _ => const [Color(0xffc2ccd4), Color(0xff8d98a2)],
-  };
+  return KansenThemeTokens.of(
+    context,
+  ).hairline.withValues(alpha: _isDark(context) ? 0.12 : 0.12);
 }
 
 class KansenApp extends StatefulWidget {
@@ -81,28 +48,8 @@ class _KansenAppState extends State<KansenApp> {
       title: 'Who Is This Kansen',
       debugShowCheckedModeBanner: false,
       themeMode: _themeMode,
-      theme: ThemeData(
-        brightness: Brightness.light,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xff4f6576),
-          brightness: Brightness.light,
-          surface: const Color(0xfff5f7f9),
-        ),
-        fontFamily: '.SF Pro Display',
-        scaffoldBackgroundColor: const Color(0xfff4f6f8),
-        useMaterial3: true,
-      ),
-      darkTheme: ThemeData(
-        brightness: Brightness.dark,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xff8fa4b6),
-          brightness: Brightness.dark,
-          surface: const Color(0xff10151c),
-        ),
-        fontFamily: '.SF Pro Display',
-        scaffoldBackgroundColor: const Color(0xff090d12),
-        useMaterial3: true,
-      ),
+      theme: KansenAppTheme.light(),
+      darkTheme: KansenAppTheme.dark(),
       home: PrototypeShell(
         themeMode: _themeMode,
         onThemeModeChanged: (themeMode) {
@@ -129,9 +76,15 @@ class PrototypeShell extends StatefulWidget {
 
 class _PrototypeShellState extends State<PrototypeShell> {
   var _tab = PrototypeTab.quiz;
-  var _activeIndex = 0;
+  late final Future<List<KansenSample>> _catalogSamplesFuture;
 
-  KansenSample get _active => kansenSamples[_activeIndex];
+  @override
+  void initState() {
+    super.initState();
+    _catalogSamplesFuture = LoadKansenCatalog(
+      AssetBundleKansenCatalogRepository(assetBundle: rootBundle),
+    )().then(_samplesFromCatalog);
+  }
 
   void _showKansen(KansenSample sample) {
     Navigator.of(context).push(
@@ -169,19 +122,45 @@ class _PrototypeShellState extends State<PrototypeShell> {
                     switchInCurve: Curves.easeOutCubic,
                     switchOutCurve: Curves.easeInCubic,
                     child: switch (_tab) {
-                      PrototypeTab.quiz => QuizPrototype(
+                      PrototypeTab.quiz => FutureBuilder<List<KansenSample>>(
                         key: const ValueKey('quiz'),
-                        sample: _active,
-                        onNext: () {
-                          setState(() {
-                            _activeIndex =
-                                (_activeIndex + 1) % kansenSamples.length;
-                          });
+                        future: _catalogSamplesFuture,
+                        builder: (context, snapshot) {
+                          if (snapshot.hasError) {
+                            return _CatalogLoadError(error: snapshot.error);
+                          }
+                          final samples = snapshot.data;
+                          if (samples == null || samples.isEmpty) {
+                            return const _CatalogLoading();
+                          }
+                          return BlocProvider(
+                            create: (_) =>
+                                QuizPromptCubit<KansenSample>(prompts: samples),
+                            child:
+                                BlocBuilder<
+                                  QuizPromptCubit<KansenSample>,
+                                  QuizPromptState<KansenSample>
+                                >(
+                                  builder: (context, state) {
+                                    final active = state.activePrompt;
+                                    if (active == null) {
+                                      return const _CatalogLoading();
+                                    }
+                                    return QuizPrototype(
+                                      sample: active,
+                                      onNext: context
+                                          .read<QuizPromptCubit<KansenSample>>()
+                                          .showNext,
+                                      onOpenDetail: () => _showKansen(active),
+                                    );
+                                  },
+                                ),
+                          );
                         },
-                        onOpenDetail: () => _showKansen(_active),
                       ),
                       PrototypeTab.dex => DexPrototype(
                         key: const ValueKey('dex'),
+                        samplesFuture: _catalogSamplesFuture,
                         onSelected: _showKansen,
                       ),
                     },
@@ -197,6 +176,61 @@ class _PrototypeShellState extends State<PrototypeShell> {
 }
 
 enum PrototypeTab { quiz, dex }
+
+List<KansenSample> _samplesFromCatalog(KansenCatalog catalog) {
+  final assetSetsById = catalog.assetSetsById;
+  final assetsById = catalog.assetsById;
+
+  return catalog.entries.map((entry) {
+    final assetSet = assetSetsById[entry.assetSetId];
+    final portraitAsset = assetsById[assetSet?.portraitAssetId]?.path;
+    final skillAssets = assetSet?.skillIconAssetIds
+        .map((assetId) => assetsById[assetId]?.path)
+        .whereType<String>()
+        .toList();
+
+    return KansenSample(
+      name: entry.answerName,
+      family: entry.variantFamily,
+      rarity: entry.rarity,
+      rarityLabel: entry.rarityLabel,
+      shipClass: entry.shipTypeLabel,
+      portraitAsset: portraitAsset ?? '',
+      skillAssets: skillAssets ?? const [],
+    );
+  }).toList();
+}
+
+class _CatalogLoading extends StatelessWidget {
+  const _CatalogLoading();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: CupertinoActivityIndicator(color: _ink(context, 0.72)),
+    );
+  }
+}
+
+class _CatalogLoadError extends StatelessWidget {
+  const _CatalogLoadError({required this.error});
+
+  final Object? error;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Text(
+          'Could not load generated catalog\n$error',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: _ink(context, 0.72)),
+        ),
+      ),
+    );
+  }
+}
 
 class _ThemeAction extends StatelessWidget {
   const _ThemeAction({
@@ -316,9 +350,7 @@ class _TopBar extends StatelessWidget {
               CupertinoSlidingSegmentedControl<PrototypeTab>(
                 groupValue: selected,
                 backgroundColor: _glass(context, dark: 0.08, light: 0.56),
-                thumbColor: _isDark(context)
-                    ? const Color(0xffd9e0e7)
-                    : const Color(0xffffffff),
+                thumbColor: KansenThemeTokens.of(context).segmentThumb,
                 children: const {
                   PrototypeTab.quiz: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 12),
@@ -372,9 +404,6 @@ class _QuizPrototypeState extends State<QuizPrototype>
     with SingleTickerProviderStateMixin {
   late final AnimationController _revealController;
   late final TextEditingController _answerController;
-  var _revealed = false;
-  var _message =
-      'Variant, rarity, and class hints are visible in Default mode.';
 
   @override
   void initState() {
@@ -392,9 +421,6 @@ class _QuizPrototypeState extends State<QuizPrototype>
     if (oldWidget.sample != widget.sample) {
       _revealController.value = 0;
       _answerController.clear();
-      _revealed = false;
-      _message =
-          'Variant, rarity, and class hints are visible in Default mode.';
     }
   }
 
@@ -405,31 +431,21 @@ class _QuizPrototypeState extends State<QuizPrototype>
     super.dispose();
   }
 
-  void _submit() {
-    final answer = _answerController.text.trim();
-    if (answer.toLowerCase() == widget.sample.name.toLowerCase()) {
-      setState(() {
-        _revealed = true;
-        _message = 'Unlocked in Kansendex';
-      });
-      _revealController.forward(from: 0);
-    } else {
-      setState(() {
-        _message = 'Exact name required, case ignored';
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final sample = widget.sample;
+    final quizState = context.watch<QuizPromptCubit<KansenSample>>().state;
+    final revealed = quizState.isRevealed;
+    if (revealed && _revealController.value == 0) {
+      _revealController.forward(from: 0);
+    }
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(18, 8, 18, 24),
       children: [
         _PromptStage(
           sample: sample,
-          revealed: _revealed,
+          revealed: revealed,
           revealAnimation: _revealController,
         ),
         const SizedBox(height: 14),
@@ -438,7 +454,9 @@ class _QuizPrototypeState extends State<QuizPrototype>
         TextField(
           controller: _answerController,
           textInputAction: TextInputAction.done,
-          onSubmitted: (_) => _submit(),
+          onSubmitted: (_) => context
+              .read<QuizPromptCubit<KansenSample>>()
+              .submitGuess(_answerController.text),
           decoration: InputDecoration(
             filled: true,
             fillColor: _glass(context, dark: 0.08, light: 0.64),
@@ -454,8 +472,8 @@ class _QuizPrototypeState extends State<QuizPrototype>
         AnimatedSwitcher(
           duration: const Duration(milliseconds: 260),
           child: Text(
-            _message,
-            key: ValueKey(_message),
+            quizState.message,
+            key: ValueKey(quizState.message),
             style: TextStyle(color: _ink(context, 0.68)),
           ),
         ),
@@ -464,13 +482,17 @@ class _QuizPrototypeState extends State<QuizPrototype>
           children: [
             Expanded(
               child: _ActionButton(
-                onPressed: _revealed ? widget.onOpenDetail : _submit,
+                onPressed: revealed
+                    ? widget.onOpenDetail
+                    : () => context
+                          .read<QuizPromptCubit<KansenSample>>()
+                          .submitGuess(_answerController.text),
                 icon: Icon(
-                  _revealed
+                  revealed
                       ? CupertinoIcons.sparkles
                       : CupertinoIcons.check_mark_circled,
                 ),
-                label: _revealed ? 'Open Detail' : 'Submit Guess',
+                label: revealed ? 'Open Detail' : 'Submit Guess',
               ),
             ),
             const SizedBox(width: 10),
@@ -532,9 +554,7 @@ class _PromptStageState extends State<_PromptStage>
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: _isDark(context)
-                  ? const [Color(0xff151e27), Color(0xff071017)]
-                  : const [Color(0xffeef3f6), Color(0xffdfe8ee)],
+              colors: KansenThemeTokens.of(context).stageGradient,
             ),
           ),
           child: Stack(
@@ -581,7 +601,9 @@ class _PromptStageState extends State<_PromptStage>
                           child: CustomPaint(
                             painter: _UnlockBurstPainter(
                               progress: widget.revealAnimation.value,
-                              colors: _rarityGradient(widget.sample.rarity),
+                              colors: KansenThemeColors.rarityGradient(
+                                widget.sample.rarity,
+                              ),
                             ),
                           ),
                         ),
@@ -617,27 +639,44 @@ class _PromptStageState extends State<_PromptStage>
 }
 
 class DexPrototype extends StatelessWidget {
-  const DexPrototype({super.key, required this.onSelected});
+  const DexPrototype({
+    super.key,
+    required this.samplesFuture,
+    required this.onSelected,
+  });
 
+  final Future<List<KansenSample>> samplesFuture;
   final ValueChanged<KansenSample> onSelected;
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      padding: const EdgeInsets.fromLTRB(18, 8, 18, 24),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: 0.72,
-      ),
-      itemCount: kansenSamples.length,
-      itemBuilder: (context, index) {
-        final sample = kansenSamples[index];
-        return _DexCard(
-          sample: sample,
-          locked: index > 2,
-          onTap: () => onSelected(sample),
+    return FutureBuilder<List<KansenSample>>(
+      future: samplesFuture,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return _CatalogLoadError(error: snapshot.error);
+        }
+        final samples = snapshot.data;
+        if (samples == null || samples.isEmpty) {
+          return const _CatalogLoading();
+        }
+        return GridView.builder(
+          padding: const EdgeInsets.fromLTRB(18, 8, 18, 24),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: 0.72,
+          ),
+          itemCount: samples.length,
+          itemBuilder: (context, index) {
+            final sample = samples[index];
+            return _DexCard(
+              sample: sample,
+              locked: index > 2,
+              onTap: () => onSelected(sample),
+            );
+          },
         );
       },
     );
@@ -687,9 +726,7 @@ class _DexCardState extends State<_DexCard>
         child: DecoratedBox(
           decoration: BoxDecoration(
             border: Border.all(color: _hairline(context)),
-            color: _isDark(context)
-                ? const Color(0xff111821)
-                : const Color(0xfff6f8fa),
+            color: KansenThemeTokens.of(context).cardSurface,
           ),
           child: Stack(
             fit: StackFit.expand,
@@ -706,7 +743,9 @@ class _DexCardState extends State<_DexCard>
                   return CustomPaint(
                     painter: _GlossPainter(
                       progress: _glossController.value,
-                      color: _rarityAccent(widget.sample.rarity),
+                      color: KansenThemeColors.rarityAccent(
+                        widget.sample.rarity,
+                      ),
                     ),
                   );
                 },
@@ -716,7 +755,9 @@ class _DexCardState extends State<_DexCard>
                 top: 0,
                 bottom: 0,
                 child: _RarityEdge(
-                  colors: _rarityGradient(widget.sample.rarity),
+                  colors: KansenThemeColors.rarityGradient(
+                    widget.sample.rarity,
+                  ),
                 ),
               ),
               Positioned(
@@ -738,7 +779,7 @@ class _DexCardState extends State<_DexCard>
                       ),
                     ),
                     Text(
-                      '${widget.sample.rarity}  ${widget.sample.shipClass}',
+                      '${widget.sample.rarityLabel}  ${widget.sample.shipClass}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -806,7 +847,7 @@ class _DetailOverlayState extends State<DetailOverlay> {
         (_pointer == Offset.zero ? Offset.zero : _pointer - center) / 80;
 
     return Scaffold(
-      backgroundColor: Colors.black.withValues(alpha: 0.58),
+      backgroundColor: Colors.black.withValues(alpha: 0.9),
       body: SafeArea(
         child: GestureDetector(
           onPanUpdate: (details) =>
@@ -837,11 +878,9 @@ class _DetailOverlayState extends State<DetailOverlay> {
                 bottom: 18,
                 child: DecoratedBox(
                   decoration: BoxDecoration(
-                    color:
-                        (_isDark(context)
-                                ? const Color(0xff10151c)
-                                : const Color(0xfff8fafb))
-                            .withValues(alpha: 0.9),
+                    color: KansenThemeTokens.of(
+                      context,
+                    ).detailSurface.withValues(alpha: 0.9),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: _hairline(context)),
                   ),
@@ -903,9 +942,9 @@ class _HintRow extends StatelessWidget {
       children: [
         _HintChip(
           icon: CupertinoIcons.square_stack_3d_up,
-          label: sample.family,
+          label: sample.family.label,
         ),
-        _HintChip(icon: CupertinoIcons.star_fill, label: sample.rarity),
+        _HintChip(icon: CupertinoIcons.star_fill, label: sample.rarityLabel),
         _HintChip(
           icon: CupertinoIcons.shield_lefthalf_fill,
           label: sample.shipClass,
@@ -1164,6 +1203,38 @@ class _UnlockBurstPainter extends CustomPainter {
       ..strokeWidth = 1.5 + 3 * fade
       ..color = accent.withValues(alpha: 0.36 * fade);
     canvas.drawCircle(center, radius * 0.78, ring);
+
+    final sparklePaint = Paint()..style = PaintingStyle.fill;
+    for (var i = 0; i < 18; i += 1) {
+      final seed = i * 0.61803398875;
+      final angle = seed * math.pi * 2 + eased * math.pi * 0.45;
+      final distance =
+          radius * (0.22 + (i % 5) * 0.115 + eased * (0.18 + (i % 3) * 0.04));
+      final position =
+          center + Offset(math.cos(angle), math.sin(angle)) * distance;
+      final localPhase = ((progress * 1.55) - (i % 6) * 0.08).clamp(0.0, 1.0);
+      final sparkleFade = math.sin(localPhase * math.pi).clamp(0.0, 1.0);
+      if (sparkleFade <= 0) continue;
+
+      final color = colors[i % colors.length];
+      final sparkleSize = (2.2 + (i % 4) * 0.75) * sparkleFade;
+      sparklePaint.color = color.withValues(alpha: 0.72 * sparkleFade);
+      _drawSparkle(canvas, position, sparkleSize, sparklePaint);
+    }
+  }
+
+  void _drawSparkle(Canvas canvas, Offset center, double radius, Paint paint) {
+    final path = Path()
+      ..moveTo(center.dx, center.dy - radius * 1.75)
+      ..lineTo(center.dx + radius * 0.42, center.dy - radius * 0.42)
+      ..lineTo(center.dx + radius * 1.75, center.dy)
+      ..lineTo(center.dx + radius * 0.42, center.dy + radius * 0.42)
+      ..lineTo(center.dx, center.dy + radius * 1.75)
+      ..lineTo(center.dx - radius * 0.42, center.dy + radius * 0.42)
+      ..lineTo(center.dx - radius * 1.75, center.dy)
+      ..lineTo(center.dx - radius * 0.42, center.dy - radius * 0.42)
+      ..close();
+    canvas.drawPath(path, paint);
   }
 
   @override
@@ -1216,8 +1287,8 @@ class _AppBackdrop extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: _isDark(context)
-              ? const [Color(0xff0a1118), Color(0xff11151b), Color(0xff071015)]
-              : const [Color(0xfff7f9fb), Color(0xffedf2f6), Color(0xffe5edf2)],
+              ? KansenThemeTokens.dark.backdropGradient
+              : KansenThemeTokens.light.backdropGradient,
         ),
       ),
       child: CustomPaint(
@@ -1235,10 +1306,9 @@ class _BackdropPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    final tokens = isDark ? KansenThemeTokens.dark : KansenThemeTokens.light;
     final paint = Paint()
-      ..color = (isDark ? Colors.white : const Color(0xff213044)).withValues(
-        alpha: isDark ? 0.035 : 0.045,
-      );
+      ..color = tokens.backdropLine.withValues(alpha: isDark ? 0.035 : 0.045);
     for (var x = -size.height; x < size.width; x += 34) {
       canvas.drawLine(
         Offset(x, 0),
@@ -1254,111 +1324,24 @@ class _BackdropPainter extends CustomPainter {
   }
 }
 
-class KansenSample {
+class KansenSample implements QuizPromptAnswer {
   const KansenSample({
     required this.name,
     required this.family,
     required this.rarity,
+    required this.rarityLabel,
     required this.shipClass,
     required this.portraitAsset,
     required this.skillAssets,
   });
 
   final String name;
-  final String family;
-  final String rarity;
+  @override
+  String get answerName => name;
+  final KansenVariantFamily family;
+  final KansenRarity rarity;
+  final String rarityLabel;
   final String shipClass;
   final String portraitAsset;
   final List<String> skillAssets;
 }
-
-const kansenSamples = [
-  KansenSample(
-    name: 'Bismarck Zwei',
-    family: 'Zwei',
-    rarity: 'Ultra Rare',
-    shipClass: 'Battleship',
-    portraitAsset: '$_assetRoot/portrait_detail__Bismarck_Zwei__q86.webp',
-    skillAssets: [
-      '$_assetRoot/skill_icon__Skill_10680__q82.webp',
-      '$_assetRoot/skill_icon__Skill_10690__q82.webp',
-    ],
-  ),
-  KansenSample(
-    name: 'Ägir',
-    family: 'Base',
-    rarity: 'Decisive',
-    shipClass: 'Large Cruiser',
-    portraitAsset: '$_assetRoot/portrait_detail__A_gir__q86.webp',
-    skillAssets: [
-      '$_assetRoot/skill_icon__Skill_151150__q82.webp',
-      '$_assetRoot/skill_icon__Skill_151160__q82.webp',
-    ],
-  ),
-  KansenSample(
-    name: 'Roon µ',
-    family: 'Muse',
-    rarity: 'Super Rare',
-    shipClass: 'Heavy Cruiser',
-    portraitAsset: '$_assetRoot/portrait_detail__Roon__q86.webp',
-    skillAssets: [
-      '$_assetRoot/skill_icon__Skill_11320__q82.webp',
-      '$_assetRoot/skill_icon__Skill_29310__q82.webp',
-    ],
-  ),
-  KansenSample(
-    name: 'Hindenburg',
-    family: 'Base',
-    rarity: 'Decisive',
-    shipClass: 'Heavy Cruiser',
-    portraitAsset: '$_assetRoot/portrait_detail__Hindenburg__q86.webp',
-    skillAssets: [
-      '$_assetRoot/skill_icon__Skill_11440__q82.webp',
-      '$_assetRoot/skill_icon__Skill_11460__q82.webp',
-    ],
-  ),
-  KansenSample(
-    name: 'Little Prinz Eugen',
-    family: 'Little',
-    rarity: 'Elite',
-    shipClass: 'Heavy Cruiser',
-    portraitAsset: '$_assetRoot/portrait_detail__Little_Prinz_Eugen__q86.webp',
-    skillAssets: [
-      '$_assetRoot/skill_icon__Skill_151150__q82.webp',
-      '$_assetRoot/skill_icon__Skill_151160__q82.webp',
-    ],
-  ),
-  KansenSample(
-    name: 'Graf Zeppelin',
-    family: 'Base',
-    rarity: 'Super Rare',
-    shipClass: 'Aircraft Carrier',
-    portraitAsset: '$_assetRoot/portrait_detail__Graf_Zeppelin__q86.webp',
-    skillAssets: [
-      '$_assetRoot/skill_icon__Skill_10680__q82.webp',
-      '$_assetRoot/skill_icon__Skill_10690__q82.webp',
-    ],
-  ),
-  KansenSample(
-    name: 'Z23',
-    family: 'Base',
-    rarity: 'Elite',
-    shipClass: 'Destroyer',
-    portraitAsset: '$_assetRoot/portrait_detail__Z23__q86.webp',
-    skillAssets: [
-      '$_assetRoot/skill_icon__Skill_11320__q82.webp',
-      '$_assetRoot/skill_icon__Skill_29310__q82.webp',
-    ],
-  ),
-  KansenSample(
-    name: 'U-47',
-    family: 'Base',
-    rarity: 'Super Rare',
-    shipClass: 'Submarine',
-    portraitAsset: '$_assetRoot/portrait_detail__U-47__q86.webp',
-    skillAssets: [
-      '$_assetRoot/skill_icon__Skill_11440__q82.webp',
-      '$_assetRoot/skill_icon__Skill_11460__q82.webp',
-    ],
-  ),
-];

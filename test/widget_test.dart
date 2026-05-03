@@ -9,6 +9,10 @@ void main() {
   ) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     await tester.pumpWidget(const KansenApp());
+    await tester.runAsync(() async {
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    });
+    await tester.pump();
 
     expect(find.text('Who Is This Kansen'), findsOneWidget);
     expect(find.byType(TextField, skipOffstage: false), findsOneWidget);
