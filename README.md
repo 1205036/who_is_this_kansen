@@ -23,5 +23,3 @@ dart run build_runner build          # regenerate freezed files
 flutter test
 flutter run
 ```
-
-Generated/copyrighted image assets live under `research/generated_images/` (gitignored). The Flutter app reads them at runtime via the `assets:` declaration in `pubspec.yaml`.
