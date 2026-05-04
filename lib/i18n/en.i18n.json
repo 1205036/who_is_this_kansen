@@ -1,0 +1,37 @@
+{
+  "app": {
+    "title": "Who Is This Kansen"
+  },
+  "topBar": {
+    "appearance": "Appearance",
+    "appearanceTooltip": "Appearance",
+    "themeSystem": "System",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "cancel": "Cancel"
+  },
+  "quiz": {
+    "answerHint": "Type exact kansen name",
+    "submit": "Submit Guess",
+    "details": "Details",
+    "nextPrompt": "Next prompt",
+    "feedbackUnlocked": "Unlocked in Kansendex",
+    "feedbackIncorrect": "Exact name required, case ignored",
+    "defaultModeHint": "Variant, rarity, and class hints are visible in Default mode."
+  },
+  "kansendex": {
+    "search": "Search",
+    "segmentAll": "All",
+    "segmentLocked": "Locked",
+    "segmentUnlocked": "Unlocked",
+    "lockedCardLabel": "Identify to unlock",
+    "semanticProgress": "Kansendex progress {percent} percent, {unlocked} of {total} unlocked",
+    "unlockToast": "{name} added to Dex"
+  },
+  "detail": {
+    "close": "Close"
+  },
+  "catalog": {
+    "loadError": "Could not load generated catalog\n{error}"
+  }
+}

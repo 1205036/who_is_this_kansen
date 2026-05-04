@@ -1,17 +1,27 @@
-# who_is_this_kansen
+# Who Is This Kansen
 
-A new Flutter project.
+A Pokedex-style guessing game for Azur Lane kansens, built in Flutter.
 
-## Getting Started
+Show a kansen, identify it by name, unlock its entry in the Kansendex, and work toward dex completion.
 
-This project is a starting point for a Flutter application.
+## Status
 
-A few resources to get you started if this is your first Flutter project:
+Early development. v1 targets iOS first (followed by Android), English-only, offline-first, with the Iron Blood roster as the minimum viable scope.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Architecture
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Clean Architecture (`presentation` / `domain` / `data` / `core`).
+- BLoC for state management via `flutter_bloc`.
+- `freezed` for value types, `slang` for app-text localization, `shared_preferences` for unlock progress.
+
+## Working on the project
+
+```sh
+flutter pub get
+dart run slang                       # regenerate i18n after editing lib/i18n/*.json
+dart run build_runner build          # regenerate freezed files
+flutter test
+flutter run
+```
+
+Generated/copyrighted image assets live under `research/generated_images/` (gitignored). The Flutter app reads them at runtime via the `assets:` declaration in `pubspec.yaml`.

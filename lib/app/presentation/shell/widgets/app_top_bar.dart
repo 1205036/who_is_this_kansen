@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:who_is_this_kansen/app/presentation/shell/app_tab.dart';
 import 'package:who_is_this_kansen/core/presentation/widgets/surface_buttons.dart';
 import 'package:who_is_this_kansen/core/theme/kansen_app_theme.dart';
+import 'package:who_is_this_kansen/i18n/strings.g.dart';
 
 class AppTopBar extends StatelessWidget {
   const AppTopBar({
@@ -44,10 +45,10 @@ class AppTopBar extends StatelessWidget {
                     context: context,
                     builder: (context) {
                       return CupertinoActionSheet(
-                        title: const Text('Appearance'),
+                        title: Text(t.topBar.appearance),
                         actions: [
                           ThemeAction(
-                            label: 'System',
+                            label: t.topBar.themeSystem,
                             icon: CupertinoIcons.device_phone_portrait,
                             selected: themeMode == ThemeMode.system,
                             onPressed: () {
@@ -56,7 +57,7 @@ class AppTopBar extends StatelessWidget {
                             },
                           ),
                           ThemeAction(
-                            label: 'Light',
+                            label: t.topBar.themeLight,
                             icon: CupertinoIcons.sun_max,
                             selected: themeMode == ThemeMode.light,
                             onPressed: () {
@@ -65,7 +66,7 @@ class AppTopBar extends StatelessWidget {
                             },
                           ),
                           ThemeAction(
-                            label: 'Dark',
+                            label: t.topBar.themeDark,
                             icon: CupertinoIcons.moon,
                             selected: themeMode == ThemeMode.dark,
                             onPressed: () {
@@ -76,14 +77,14 @@ class AppTopBar extends StatelessWidget {
                         ],
                         cancelButton: CupertinoActionSheetAction(
                           onPressed: () => Navigator.of(context).pop(),
-                          child: const Text('Cancel'),
+                          child: Text(t.topBar.cancel),
                         ),
                       );
                     },
                   );
                 },
                 icon: Icon(themeIcon),
-                tooltip: 'Appearance',
+                tooltip: t.topBar.appearanceTooltip,
                 size: 32,
               ),
               const SizedBox(width: 8),
@@ -110,11 +111,11 @@ class AppTopBar extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Who Is This Kansen',
+          Text(
+            t.app.title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w800,
               letterSpacing: 0,

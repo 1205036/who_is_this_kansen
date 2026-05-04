@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:who_is_this_kansen/core/theme/kansen_app_theme.dart';
+import 'package:who_is_this_kansen/i18n/strings.g.dart';
 import 'package:who_is_this_kansen/kansen/presentation/models/kansen_view_model.dart';
 import 'package:who_is_this_kansen/kansen/presentation/widgets/kansen_art.dart';
 import 'package:who_is_this_kansen/kansen/presentation/widgets/kansen_hint_row.dart';
@@ -46,7 +47,7 @@ class _KansenDetailScreenState extends State<KansenDetailScreen> {
                 top: 8,
                 right: 12,
                 child: IconButton.filledTonal(
-                  tooltip: 'Close',
+                  tooltip: t.detail.close,
                   onPressed: () => Navigator.of(context).pop(),
                   icon: const Icon(CupertinoIcons.xmark),
                 ),

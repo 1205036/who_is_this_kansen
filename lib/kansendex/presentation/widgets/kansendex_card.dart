@@ -2,9 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:who_is_this_kansen/core/theme/kansen_app_theme.dart';
 import 'package:who_is_this_kansen/core/theme/kansen_theme_colors.dart';
+import 'package:who_is_this_kansen/i18n/strings.g.dart';
 import 'package:who_is_this_kansen/kansen/presentation/models/kansen_view_model.dart';
 import 'package:who_is_this_kansen/kansen/presentation/widgets/kansen_art.dart';
 import 'package:who_is_this_kansen/kansen/presentation/widgets/rarity_edge.dart';
+import 'package:who_is_this_kansen/kansendex/presentation/widgets/gloss_painter.dart';
 
 class KansendexCard extends StatefulWidget {
   const KansendexCard({
@@ -117,7 +119,11 @@ class _LockedKansenArt extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Opacity(opacity: 0.68, child: KansenSilhouetteImage(asset: asset));
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Opacity(
+      opacity: isDark ? 0.38 : 0.18,
+      child: KansenSilhouetteImage(asset: asset),
+    );
   }
 }
 
@@ -129,6 +135,7 @@ class _LockedKansenOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = KansenThemeTokens.of(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -136,9 +143,9 @@ class _LockedKansenOverlay extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            tokens.cardSurface.withValues(alpha: 0.1),
-            tokens.cardSurface.withValues(alpha: 0.52),
-            Colors.black.withValues(alpha: 0.46),
+            tokens.cardSurface.withValues(alpha: isDark ? 0.26 : 0.96),
+            tokens.cardSurface.withValues(alpha: isDark ? 0.58 : 0.99),
+            Colors.black.withValues(alpha: isDark ? 0.5 : 0.86),
           ],
         ),
       ),
@@ -199,7 +206,7 @@ class _LockedCardLabel extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          'Identify to unlock',
+          t.kansendex.lockedCardLabel,
           textAlign: TextAlign.center,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -261,39 +268,6 @@ class _UnlockedCardLabel extends StatelessWidget {
         ),
       ],
     );
-  }
-}
-
-class GlossPainter extends CustomPainter {
-  const GlossPainter({required this.progress, required this.color});
-
-  final double progress;
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final x = (size.width * 2.4 * progress) - size.width * 0.8;
-    final path = Path()
-      ..moveTo(x, 0)
-      ..lineTo(x + size.width * 0.32, 0)
-      ..lineTo(x - size.width * 0.08, size.height)
-      ..lineTo(x - size.width * 0.4, size.height)
-      ..close();
-    final paint = Paint()
-      ..shader = LinearGradient(
-        colors: [
-          Colors.transparent,
-          color.withValues(alpha: 0.18),
-          Colors.white.withValues(alpha: 0.08),
-          Colors.transparent,
-        ],
-      ).createShader(path.getBounds());
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant GlossPainter oldDelegate) {
-    return oldDelegate.progress != progress || oldDelegate.color != color;
   }
 }
 

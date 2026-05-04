@@ -209,7 +209,7 @@ return $default(_that.prompts,_that.activeIndex,_that.answerStatus,_that.message
 
 
 class _QuizPromptState<T> extends QuizPromptState<T> {
-  const _QuizPromptState({required final  List<T> prompts, this.activeIndex = 0, this.answerStatus = QuizAnswerStatus.awaitingAnswer, this.message = 'Variant, rarity, and class hints are visible in Default mode.'}): _prompts = prompts,super._();
+  const _QuizPromptState({required final  List<T> prompts, this.activeIndex = 0, this.answerStatus = QuizAnswerStatus.awaitingAnswer, this.message = ''}): _prompts = prompts,super._();
   
 
  final  List<T> _prompts;

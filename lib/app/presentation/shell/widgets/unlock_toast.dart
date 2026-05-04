@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:who_is_this_kansen/core/theme/kansen_app_theme.dart';
 import 'package:who_is_this_kansen/core/theme/kansen_theme_colors.dart';
+import 'package:who_is_this_kansen/i18n/strings.g.dart';
 import 'package:who_is_this_kansen/kansen/presentation/models/kansen_view_model.dart';
 
 class UnlockToast extends StatelessWidget {
@@ -41,7 +42,7 @@ class UnlockToast extends StatelessWidget {
             const SizedBox(width: 8),
             Flexible(
               child: Text(
-                '${kansen.name} added to Dex',
+                t.kansendex.unlockToast(name: kansen.name),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(

@@ -10,8 +10,7 @@ abstract class QuizPromptState<T> with _$QuizPromptState<T> {
     required List<T> prompts,
     @Default(0) int activeIndex,
     @Default(QuizAnswerStatus.awaitingAnswer) QuizAnswerStatus answerStatus,
-    @Default('Variant, rarity, and class hints are visible in Default mode.')
-    String message,
+    @Default('') String message,
   }) = _QuizPromptState<T>;
 
   T? get activePrompt {

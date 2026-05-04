@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:who_is_this_kansen/core/presentation/widgets/surface_buttons.dart';
 import 'package:who_is_this_kansen/core/theme/kansen_app_theme.dart';
+import 'package:who_is_this_kansen/i18n/strings.g.dart';
 import 'package:who_is_this_kansen/kansen/presentation/models/kansen_view_model.dart';
 import 'package:who_is_this_kansen/kansen/presentation/widgets/kansen_hint_row.dart';
 import 'package:who_is_this_kansen/quiz/presentation/bloc/quiz_prompt_cubit.dart';
@@ -92,7 +93,7 @@ class _QuizScreenState extends State<QuizScreen>
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white.withValues(alpha: isDark ? 0.08 : 0.64),
-            hintText: 'Type exact kansen name',
+            hintText: t.quiz.answerHint,
             prefixIcon: const Icon(CupertinoIcons.text_cursor),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
@@ -129,14 +130,14 @@ class _QuizScreenState extends State<QuizScreen>
                       ? CupertinoIcons.sparkles
                       : CupertinoIcons.check_mark_circled,
                 ),
-                label: revealed ? 'Details' : 'Submit Guess',
+                label: revealed ? t.quiz.details : t.quiz.submit,
               ),
             ),
             const SizedBox(width: 10),
             SurfaceIconButton(
               onPressed: widget.onNext,
               icon: const Icon(CupertinoIcons.forward_fill),
-              tooltip: 'Next prompt',
+              tooltip: t.quiz.nextPrompt,
             ),
           ],
         ),

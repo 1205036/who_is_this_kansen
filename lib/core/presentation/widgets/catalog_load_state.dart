@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:who_is_this_kansen/core/theme/kansen_app_theme.dart';
+import 'package:who_is_this_kansen/i18n/strings.g.dart';
 
 class CatalogLoading extends StatelessWidget {
   const CatalogLoading({super.key});
@@ -25,7 +26,7 @@ class CatalogLoadError extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Text(
-          'Could not load generated catalog\n$error',
+          t.catalog.loadError(error: '$error'),
           textAlign: TextAlign.center,
           style: TextStyle(
             color: KansenThemeTokens.of(context).ink.withValues(alpha: 0.72),
