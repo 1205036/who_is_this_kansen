@@ -1,4 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:who_is_this_kansen/quiz/presentation/bloc/quiz_prompt_state.dart';
+
+export 'package:who_is_this_kansen/quiz/presentation/bloc/quiz_prompt_state.dart';
 
 class QuizPromptCubit<T extends QuizPromptAnswer>
     extends Cubit<QuizPromptState<T>> {
@@ -18,9 +21,9 @@ class QuizPromptCubit<T extends QuizPromptAnswer>
     );
   }
 
-  void submitGuess(String guess) {
+  bool submitGuess(String guess) {
     final active = state.activePrompt;
-    if (active == null) return;
+    if (active == null) return false;
 
     final normalizedGuess = guess.trim().toLowerCase();
     final normalizedAnswer = active.answerName.trim().toLowerCase();
@@ -32,6 +35,7 @@ class QuizPromptCubit<T extends QuizPromptAnswer>
           message: 'Unlocked in Kansendex',
         ),
       );
+      return true;
     } else {
       emit(
         state.copyWith(
@@ -39,48 +43,7 @@ class QuizPromptCubit<T extends QuizPromptAnswer>
           message: 'Exact name required, case ignored',
         ),
       );
+      return false;
     }
   }
 }
-
-class QuizPromptState<T> {
-  const QuizPromptState({
-    required this.prompts,
-    this.activeIndex = 0,
-    this.answerStatus = QuizAnswerStatus.awaitingAnswer,
-    this.message =
-        'Variant, rarity, and class hints are visible in Default mode.',
-  });
-
-  final List<T> prompts;
-  final int activeIndex;
-  final QuizAnswerStatus answerStatus;
-  final String message;
-
-  T? get activePrompt {
-    if (prompts.isEmpty) return null;
-    return prompts[activeIndex % prompts.length];
-  }
-
-  bool get isRevealed => answerStatus == QuizAnswerStatus.correct;
-
-  QuizPromptState<T> copyWith({
-    List<T>? prompts,
-    int? activeIndex,
-    QuizAnswerStatus? answerStatus,
-    String? message,
-  }) {
-    return QuizPromptState<T>(
-      prompts: prompts ?? this.prompts,
-      activeIndex: activeIndex ?? this.activeIndex,
-      answerStatus: answerStatus ?? this.answerStatus,
-      message: message ?? this.message,
-    );
-  }
-}
-
-abstract interface class QuizPromptAnswer {
-  String get answerName;
-}
-
-enum QuizAnswerStatus { awaitingAnswer, correct, incorrect }

@@ -45,6 +45,20 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Local CocoaPods/native build artifacts
+/ios/.symlinks/
+/ios/Flutter/Flutter.podspec
+/ios/Flutter/ephemeral/
+/ios/Pods/
+/ios/Podfile
+/ios/Podfile.lock
+/ios/Runner.xcworkspace/xcuserdata/
+/macos/Flutter/ephemeral/
+/macos/Pods/
+/macos/Podfile
+/macos/Podfile.lock
+/macos/Runner.xcworkspace/xcuserdata/
+
 # Local/private research inputs and generated image derivatives
 /tooling/
 /research/
