@@ -22,6 +22,8 @@ abstract class QuizPromptState<T> with _$QuizPromptState<T> {
 }
 
 abstract interface class QuizPromptAnswer {
+  String get id;
+
   String get answerName;
 }
 

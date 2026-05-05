@@ -27,9 +27,15 @@ void main() {
     });
     await tester.pump();
 
-    expect(find.text(t.app.title), findsAtLeastNWidgets(1));
-    expect(find.byType(TextField, skipOffstage: false), findsOneWidget);
-    expect(find.text(t.quiz.submit, skipOffstage: false), findsOneWidget);
+    expect(find.text(t.quiz.modeDiscovery.toUpperCase()), findsOneWidget);
+    expect(find.text(t.quiz.modeRandom.toUpperCase()), findsOneWidget);
+    expect(find.text(t.quiz.modeDex.toUpperCase()), findsOneWidget);
+
+    await tester.tap(find.text(t.quiz.modeDiscovery.toUpperCase()));
+    await tester.runAsync(() async {
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    });
+    await tester.pump(const Duration(milliseconds: 420));
 
     addTearDown(() => tester.binding.setSurfaceSize(null));
   });

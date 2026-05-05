@@ -2,24 +2,24 @@ import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:who_is_this_kansen/app/presentation/shell/app_tab.dart';
 import 'package:who_is_this_kansen/core/presentation/widgets/surface_buttons.dart';
-import 'package:who_is_this_kansen/core/theme/kansen_app_theme.dart';
 import 'package:who_is_this_kansen/i18n/strings.g.dart';
 
 class AppTopBar extends StatelessWidget {
   const AppTopBar({
     super.key,
-    required this.selected,
-    required this.onSelected,
     required this.themeMode,
     required this.onThemeModeChanged,
+    required this.onHome,
+    required this.showHome,
+    required this.showTitle,
   });
 
-  final AppTab selected;
-  final ValueChanged<AppTab> onSelected;
   final ThemeMode themeMode;
   final ValueChanged<ThemeMode> onThemeModeChanged;
+  final VoidCallback onHome;
+  final bool showHome;
+  final bool showTitle;
 
   IconData get themeIcon {
     return switch (themeMode) {
@@ -39,8 +39,21 @@ class AppTopBar extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.end,
             children: [
+              AnimatedOpacity(
+                opacity: showHome ? 1 : 0,
+                duration: const Duration(milliseconds: 180),
+                child: IgnorePointer(
+                  ignoring: !showHome,
+                  child: SurfaceIconButton(
+                    onPressed: onHome,
+                    icon: const Icon(CupertinoIcons.house_fill),
+                    tooltip: t.topBar.homeTooltip,
+                    size: 32,
+                  ),
+                ),
+              ),
+              const Spacer(),
               SurfaceIconButton(
                 onPressed: () {
                   showCupertinoModalPopup<void>(
@@ -93,39 +106,29 @@ class AppTopBar extends StatelessWidget {
                 tooltip: t.topBar.appearanceTooltip,
                 size: 32,
               ),
-              const SizedBox(width: 8),
-              CupertinoSlidingSegmentedControl<AppTab>(
-                groupValue: selected,
-                backgroundColor: Colors.white.withValues(
-                  alpha: isDark ? 0.08 : 0.56,
-                ),
-                thumbColor: KansenThemeTokens.of(context).segmentThumb,
-                children: const {
-                  AppTab.quiz: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 12),
-                    child: Icon(CupertinoIcons.question_circle, size: 18),
-                  ),
-                  AppTab.dex: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 12),
-                    child: Icon(CupertinoIcons.square_grid_2x2, size: 18),
-                  ),
-                },
-                onValueChanged: (value) {
-                  if (value != null) onSelected(value);
-                },
-              ),
             ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            t.app.title,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0,
-            ),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOutCubic,
+            child: showTitle
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 8),
+                      Text(
+                        t.app.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0,
+                        ),
+                      ),
+                    ],
+                  )
+                : const SizedBox.shrink(),
           ),
         ],
       ),

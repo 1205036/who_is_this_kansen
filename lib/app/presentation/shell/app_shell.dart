@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:who_is_this_kansen/app/presentation/shell/app_tab.dart';
+import 'package:who_is_this_kansen/app/presentation/shell/screens/landing_screen.dart';
 import 'package:who_is_this_kansen/app/presentation/shell/widgets/app_backdrop.dart';
 import 'package:who_is_this_kansen/app/presentation/shell/widgets/app_top_bar.dart';
 import 'package:who_is_this_kansen/app/presentation/shell/widgets/unlock_toast.dart';
@@ -31,7 +32,8 @@ class AppShell extends StatefulWidget {
 }
 
 class _AppShellState extends State<AppShell> {
-  var _tab = AppTab.quiz;
+  var _tab = AppTab.landing;
+  var _quizMode = QuizMode.discovery;
   var _toastGeneration = 0;
   KansenViewModel? _toastKansen;
   late final Future<List<KansenViewModel>> _kansenFuture;
@@ -83,17 +85,66 @@ class _AppShellState extends State<AppShell> {
               child: Column(
                 children: [
                   AppTopBar(
-                    selected: _tab,
-                    onSelected: (tab) => setState(() => _tab = tab),
                     themeMode: widget.themeMode,
                     onThemeModeChanged: widget.onThemeModeChanged,
+                    showHome: _tab != AppTab.landing,
+                    showTitle: _tab != AppTab.landing,
+                    onHome: () => setState(() => _tab = AppTab.landing),
                   ),
                   Expanded(
                     child: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 360),
                       switchInCurve: Curves.easeOutCubic,
                       switchOutCurve: Curves.easeInCubic,
+                      layoutBuilder: (currentChild, previousChildren) {
+                        return Stack(
+                          fit: StackFit.expand,
+                          alignment: Alignment.topCenter,
+                          children: [...previousChildren, ?currentChild],
+                        );
+                      },
                       child: switch (_tab) {
+                        AppTab.landing => FutureBuilder<List<KansenViewModel>>(
+                          key: const ValueKey('landing'),
+                          future: _kansenFuture,
+                          builder: (context, snapshot) {
+                            if (snapshot.hasError) {
+                              return CatalogLoadError(error: snapshot.error);
+                            }
+                            final kansen = snapshot.data;
+                            if (kansen == null || kansen.isEmpty) {
+                              return const CatalogLoading();
+                            }
+                            return BlocBuilder<
+                              UnlockProgressCubit,
+                              UnlockProgressState
+                            >(
+                              builder: (context, progressState) {
+                                final hasLocked = kansen.any(
+                                  (item) => !progressState.isUnlocked(item.id),
+                                );
+                                return LandingScreen(
+                                  showDiscovery: hasLocked,
+                                  onDiscovery: () {
+                                    setState(() {
+                                      _quizMode = QuizMode.discovery;
+                                      _tab = AppTab.quiz;
+                                    });
+                                  },
+                                  onRandom: () {
+                                    setState(() {
+                                      _quizMode = QuizMode.random;
+                                      _tab = AppTab.quiz;
+                                    });
+                                  },
+                                  onDex: () {
+                                    setState(() => _tab = AppTab.dex);
+                                  },
+                                );
+                              },
+                            );
+                          },
+                        ),
                         AppTab.quiz => FutureBuilder<List<KansenViewModel>>(
                           key: const ValueKey('quiz'),
                           future: _kansenFuture,
@@ -105,60 +156,85 @@ class _AppShellState extends State<AppShell> {
                             if (kansen == null || kansen.isEmpty) {
                               return const CatalogLoading();
                             }
-                            return BlocProvider(
-                              create: (_) => QuizPromptCubit<KansenViewModel>(
-                                prompts: kansen,
-                              ),
-                              child:
-                                  BlocBuilder<
-                                    QuizPromptCubit<KansenViewModel>,
-                                    QuizPromptState<KansenViewModel>
-                                  >(
-                                    builder: (context, state) {
-                                      final active = state.activePrompt;
-                                      if (active == null) {
-                                        return const CatalogLoading();
-                                      }
-                                      return QuizScreen(
-                                        kansen: active,
-                                        onCorrectAnswer: (kansen) async {
-                                          final result = await context
-                                              .read<UnlockProgressCubit>()
-                                              .unlock(kansen.id);
-                                          if (result?.added ?? false) {
-                                            _showUnlockToast(kansen);
+                            return BlocBuilder<
+                              UnlockProgressCubit,
+                              UnlockProgressState
+                            >(
+                              builder: (context, progressState) {
+                                return BlocProvider(
+                                  create: (_) =>
+                                      QuizPromptCubit<KansenViewModel>(
+                                        prompts: kansen,
+                                        mode: _quizMode,
+                                        unlockedKansenIds: progressState
+                                            .progress
+                                            .unlockedKansenIds,
+                                      ),
+                                  child:
+                                      BlocBuilder<
+                                        QuizPromptCubit<KansenViewModel>,
+                                        QuizPromptState<KansenViewModel>
+                                      >(
+                                        builder: (context, state) {
+                                          final active = state.activePrompt;
+                                          if (active == null) {
+                                            return const CatalogLoading();
                                           }
-                                        },
-                                        onOpenDetail: () {
-                                          Navigator.of(context).push(
-                                            PageRouteBuilder<void>(
-                                              opaque: false,
-                                              barrierColor: Colors.black
-                                                  .withValues(alpha: 0.34),
-                                              pageBuilder:
-                                                  (
-                                                    context,
-                                                    animation,
-                                                    secondaryAnimation,
-                                                  ) {
-                                                    return FadeTransition(
-                                                      opacity: animation,
-                                                      child: KansenDetailScreen(
-                                                        kansen: active,
-                                                      ),
-                                                    );
-                                                  },
-                                            ),
+                                          return QuizScreen(
+                                            mode: _quizMode,
+                                            kansen: active,
+                                            onCorrectAnswer: (kansen) async {
+                                              final quizCubit = context
+                                                  .read<
+                                                    QuizPromptCubit<
+                                                      KansenViewModel
+                                                    >
+                                                  >();
+                                              final result = await context
+                                                  .read<UnlockProgressCubit>()
+                                                  .unlock(kansen.id);
+                                              if (result?.added ?? false) {
+                                                quizCubit.recordUnlocked(
+                                                  kansen.id,
+                                                );
+                                                _showUnlockToast(kansen);
+                                              }
+                                            },
+                                            onOpenDetail: () {
+                                              Navigator.of(context).push(
+                                                PageRouteBuilder<void>(
+                                                  opaque: false,
+                                                  barrierColor: Colors.black
+                                                      .withValues(alpha: 0.34),
+                                                  pageBuilder:
+                                                      (
+                                                        context,
+                                                        animation,
+                                                        secondaryAnimation,
+                                                      ) {
+                                                        return FadeTransition(
+                                                          opacity: animation,
+                                                          child:
+                                                              KansenDetailScreen(
+                                                                kansen: active,
+                                                              ),
+                                                        );
+                                                      },
+                                                ),
+                                              );
+                                            },
+                                            onNext: context
+                                                .read<
+                                                  QuizPromptCubit<
+                                                    KansenViewModel
+                                                  >
+                                                >()
+                                                .showNext,
                                           );
                                         },
-                                        onNext: context
-                                            .read<
-                                              QuizPromptCubit<KansenViewModel>
-                                            >()
-                                            .showNext,
-                                      );
-                                    },
-                                  ),
+                                      ),
+                                );
+                              },
                             );
                           },
                         ),

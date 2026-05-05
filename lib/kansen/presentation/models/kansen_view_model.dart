@@ -13,6 +13,7 @@ class KansenViewModel implements QuizPromptAnswer {
     required this.skillAssets,
   });
 
+  @override
   final String id;
   final String name;
 

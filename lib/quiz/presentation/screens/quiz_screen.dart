@@ -12,12 +12,14 @@ import 'package:who_is_this_kansen/quiz/presentation/widgets/prompt_stage.dart';
 class QuizScreen extends StatefulWidget {
   const QuizScreen({
     super.key,
+    required this.mode,
     required this.kansen,
     required this.onCorrectAnswer,
     required this.onNext,
     required this.onOpenDetail,
   });
 
+  final QuizMode mode;
   final KansenViewModel kansen;
   final Future<void> Function(KansenViewModel kansen) onCorrectAnswer;
   final VoidCallback onNext;
@@ -78,6 +80,31 @@ class _QuizScreenState extends State<QuizScreen>
           revealAnimation: _revealController,
         ),
         const SizedBox(height: 14),
+        Center(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: isDark ? 0.08 : 0.58),
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(
+                color: tokens.hairline.withValues(alpha: 0.12),
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              child: Text(
+                switch (widget.mode) {
+                  QuizMode.discovery => t.quiz.modeDiscovery,
+                  QuizMode.random => t.quiz.modeRandom,
+                },
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
         KansenHintRow(kansen: widget.kansen),
         const SizedBox(height: 14),
         TextField(

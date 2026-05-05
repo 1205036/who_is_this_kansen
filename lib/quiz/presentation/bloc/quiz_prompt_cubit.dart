@@ -1,31 +1,66 @@
+import 'dart:math';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:who_is_this_kansen/i18n/strings.g.dart';
 import 'package:who_is_this_kansen/quiz/presentation/bloc/quiz_prompt_state.dart';
+import 'package:who_is_this_kansen/quiz/presentation/models/quiz_mode.dart';
 
 export 'package:who_is_this_kansen/quiz/presentation/bloc/quiz_prompt_state.dart';
+export 'package:who_is_this_kansen/quiz/presentation/models/quiz_mode.dart';
 
 class QuizPromptCubit<T extends QuizPromptAnswer>
     extends Cubit<QuizPromptState<T>> {
-  QuizPromptCubit({required List<T> prompts})
-    : _prompts = List.unmodifiable(prompts),
-      super(
-        QuizPromptState<T>(
-          prompts: List.unmodifiable(prompts),
-          message: t.quiz.defaultModeHint,
-        ),
-      );
+  QuizPromptCubit({
+    required List<T> prompts,
+    this.mode = QuizMode.discovery,
+    Set<String> unlockedKansenIds = const {},
+    Random? random,
+  }) : _allPrompts = List.unmodifiable(prompts),
+       _unlockedKansenIds = {...unlockedKansenIds},
+       super(
+         QuizPromptState<T>(
+           prompts: List.unmodifiable(
+             _buildInitialPrompts(
+               prompts,
+               mode,
+               unlockedKansenIds,
+               random ?? Random(),
+             ),
+           ),
+           message: switch (mode) {
+             QuizMode.discovery => t.quiz.discoveryModeHint,
+             QuizMode.random => t.quiz.randomModeHint,
+           },
+         ),
+       );
 
-  final List<T> _prompts;
+  final List<T> _allPrompts;
+  final QuizMode mode;
+  final Set<String> _unlockedKansenIds;
 
   void showNext() {
-    if (_prompts.isEmpty) return;
+    final prompts = _activePrompts();
+    if (prompts.isEmpty) {
+      emit(
+        QuizPromptState<T>(prompts: prompts, message: t.quiz.discoveryComplete),
+      );
+      return;
+    }
+
     emit(
       QuizPromptState<T>(
-        prompts: _prompts,
-        activeIndex: (state.activeIndex + 1) % _prompts.length,
-        message: t.quiz.defaultModeHint,
+        prompts: prompts,
+        activeIndex: (state.activeIndex + 1) % prompts.length,
+        message: switch (mode) {
+          QuizMode.discovery => t.quiz.discoveryModeHint,
+          QuizMode.random => t.quiz.randomModeHint,
+        },
       ),
     );
+  }
+
+  void recordUnlocked(String kansenId) {
+    _unlockedKansenIds.add(kansenId);
   }
 
   bool submitGuess(String guess) {
@@ -52,5 +87,29 @@ class QuizPromptCubit<T extends QuizPromptAnswer>
       );
       return false;
     }
+  }
+
+  List<T> _activePrompts() {
+    return switch (mode) {
+      QuizMode.discovery => List.unmodifiable(
+        _allPrompts.where((prompt) => !_unlockedKansenIds.contains(prompt.id)),
+      ),
+      QuizMode.random => state.prompts,
+    };
+  }
+
+  static List<T> _buildInitialPrompts<T extends QuizPromptAnswer>(
+    List<T> prompts,
+    QuizMode mode,
+    Set<String> unlockedKansenIds,
+    Random random,
+  ) {
+    return switch (mode) {
+      QuizMode.discovery =>
+        prompts
+            .where((prompt) => !unlockedKansenIds.contains(prompt.id))
+            .toList(),
+      QuizMode.random => [...prompts]..shuffle(random),
+    };
   }
 }

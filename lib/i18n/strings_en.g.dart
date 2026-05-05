@@ -74,6 +74,9 @@ class TranslationsTopBarEn {
 	/// en: 'Appearance'
 	String get appearanceTooltip => 'Appearance';
 
+	/// en: 'Home'
+	String get homeTooltip => 'Home';
+
 	/// en: 'System'
 	String get themeSystem => 'System';
 
@@ -95,6 +98,15 @@ class TranslationsQuizEn {
 
 	// Translations
 
+	/// en: 'Discovery'
+	String get modeDiscovery => 'Discovery';
+
+	/// en: 'Random'
+	String get modeRandom => 'Random';
+
+	/// en: 'Dex'
+	String get modeDex => 'Dex';
+
 	/// en: 'Type exact kansen name'
 	String get answerHint => 'Type exact kansen name';
 
@@ -113,8 +125,14 @@ class TranslationsQuizEn {
 	/// en: 'Exact name required, case ignored'
 	String get feedbackIncorrect => 'Exact name required, case ignored';
 
-	/// en: 'Variant, rarity, and class hints are visible in Default mode.'
-	String get defaultModeHint => 'Variant, rarity, and class hints are visible in Default mode.';
+	/// en: 'Identify locked kansens to complete the Dex.'
+	String get discoveryModeHint => 'Identify locked kansens to complete the Dex.';
+
+	/// en: 'Randomized kansen challenge.'
+	String get randomModeHint => 'Randomized kansen challenge.';
+
+	/// en: 'Discovery complete.'
+	String get discoveryComplete => 'Discovery complete.';
 }
 
 // Path: kansendex
@@ -185,17 +203,23 @@ extension on Translations {
 			'app.title' => 'Kansendex',
 			'topBar.appearance' => 'Appearance',
 			'topBar.appearanceTooltip' => 'Appearance',
+			'topBar.homeTooltip' => 'Home',
 			'topBar.themeSystem' => 'System',
 			'topBar.themeLight' => 'Light',
 			'topBar.themeDark' => 'Dark',
 			'topBar.cancel' => 'Cancel',
+			'quiz.modeDiscovery' => 'Discovery',
+			'quiz.modeRandom' => 'Random',
+			'quiz.modeDex' => 'Dex',
 			'quiz.answerHint' => 'Type exact kansen name',
 			'quiz.submit' => 'Submit Guess',
 			'quiz.details' => 'Details',
 			'quiz.nextPrompt' => 'Next prompt',
 			'quiz.feedbackUnlocked' => 'Unlocked in Kansendex',
 			'quiz.feedbackIncorrect' => 'Exact name required, case ignored',
-			'quiz.defaultModeHint' => 'Variant, rarity, and class hints are visible in Default mode.',
+			'quiz.discoveryModeHint' => 'Identify locked kansens to complete the Dex.',
+			'quiz.randomModeHint' => 'Randomized kansen challenge.',
+			'quiz.discoveryComplete' => 'Discovery complete.',
 			'kansendex.search' => 'Search',
 			'kansendex.segmentAll' => 'All',
 			'kansendex.segmentLocked' => 'Locked',

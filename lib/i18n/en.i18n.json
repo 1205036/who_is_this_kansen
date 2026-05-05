@@ -5,19 +5,25 @@
   "topBar": {
     "appearance": "Appearance",
     "appearanceTooltip": "Appearance",
+    "homeTooltip": "Home",
     "themeSystem": "System",
     "themeLight": "Light",
     "themeDark": "Dark",
     "cancel": "Cancel"
   },
   "quiz": {
+    "modeDiscovery": "Discovery",
+    "modeRandom": "Random",
+    "modeDex": "Dex",
     "answerHint": "Type exact kansen name",
     "submit": "Submit Guess",
     "details": "Details",
     "nextPrompt": "Next prompt",
     "feedbackUnlocked": "Unlocked in Kansendex",
     "feedbackIncorrect": "Exact name required, case ignored",
-    "defaultModeHint": "Variant, rarity, and class hints are visible in Default mode."
+    "discoveryModeHint": "Identify locked kansens to complete the Dex.",
+    "randomModeHint": "Randomized kansen challenge.",
+    "discoveryComplete": "Discovery complete."
   },
   "kansendex": {
     "search": "Search",
