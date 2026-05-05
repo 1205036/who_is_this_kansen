@@ -137,6 +137,9 @@ class TranslationsKansendexEn {
 	/// en: 'Unlocked'
 	String get segmentUnlocked => 'Unlocked';
 
+	/// en: 'No unlocked entries found'
+	String get noUnlockedEntriesFound => 'No unlocked entries found';
+
 	/// en: 'Identify to unlock'
 	String get lockedCardLabel => 'Identify to unlock';
 
@@ -197,6 +200,7 @@ extension on Translations {
 			'kansendex.segmentAll' => 'All',
 			'kansendex.segmentLocked' => 'Locked',
 			'kansendex.segmentUnlocked' => 'Unlocked',
+			'kansendex.noUnlockedEntriesFound' => 'No unlocked entries found',
 			'kansendex.lockedCardLabel' => 'Identify to unlock',
 			'kansendex.semanticProgress' => ({required Object percent, required Object unlocked, required Object total}) => 'Kansendex progress ${percent} percent, ${unlocked} of ${total} unlocked',
 			'kansendex.unlockToast' => ({required Object name}) => '${name} added to Dex',

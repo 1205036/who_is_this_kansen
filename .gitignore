@@ -61,5 +61,6 @@ app.*.map.json
 
 # Local/private inputs and generated image derivatives
 /tooling/
+/tmp/
 /research/
 /assets/kansen/

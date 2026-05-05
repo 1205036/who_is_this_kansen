@@ -24,6 +24,7 @@
     "segmentAll": "All",
     "segmentLocked": "Locked",
     "segmentUnlocked": "Unlocked",
+    "noUnlockedEntriesFound": "No unlocked entries found",
     "lockedCardLabel": "Identify to unlock",
     "semanticProgress": "Kansendex progress {percent} percent, {unlocked} of {total} unlocked",
     "unlockToast": "{name} added to Dex"

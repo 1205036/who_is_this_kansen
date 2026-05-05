@@ -52,6 +52,7 @@ void main() {
     await tester.pump();
 
     expect(find.byType(KansendexCard), findsNothing);
+    expect(find.text(t.kansendex.noUnlockedEntriesFound), findsOneWidget);
 
     await tester.enterText(
       find.byKey(const ValueKey('kansendex-search-field')),
@@ -61,6 +62,7 @@ void main() {
 
     expect(find.text('Z23'), findsNothing);
     expect(find.text('Z28'), findsOneWidget);
+    expect(find.text(t.kansendex.noUnlockedEntriesFound), findsNothing);
 
     await tester.tap(find.text(t.kansendex.segmentLocked));
     await tester.pump(const Duration(milliseconds: 320));

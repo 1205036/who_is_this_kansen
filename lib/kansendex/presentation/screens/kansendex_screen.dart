@@ -4,6 +4,7 @@ import 'package:who_is_this_kansen/core/presentation/widgets/catalog_load_state.
 import 'package:who_is_this_kansen/kansen/presentation/models/kansen_view_model.dart';
 import 'package:who_is_this_kansen/kansendex/presentation/models/kansendex_filter.dart';
 import 'package:who_is_this_kansen/kansendex/presentation/widgets/kansendex_card.dart';
+import 'package:who_is_this_kansen/kansendex/presentation/widgets/kansendex_empty_state.dart';
 import 'package:who_is_this_kansen/kansendex/presentation/widgets/kansendex_progress_header.dart';
 import 'package:who_is_this_kansen/progress/progress.dart';
 
@@ -166,6 +167,10 @@ class _KansendexGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (kansen.isEmpty) {
+      return const KansendexEmptyState();
+    }
+
     return GridView.builder(
       padding: const EdgeInsets.fromLTRB(18, 0, 18, 24),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
