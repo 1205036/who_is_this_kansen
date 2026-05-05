@@ -236,17 +236,14 @@ class KansenCatalogDecoder {
     }
 
     for (final asset in catalog.assets) {
-      if (!asset.path.startsWith('research/generated_images/')) {
+      if (!asset.path.startsWith('assets/kansen/')) {
         throw CatalogFormatException(
-          'Asset ${asset.id} has a non-generated path ${asset.path}.',
+          'Asset ${asset.id} has a non-bundled path ${asset.path}.',
         );
       }
-      if (asset.path.contains('sample_pages') ||
-          asset.path.contains('koumakan') ||
-          asset.path.contains('http://') ||
-          asset.path.contains('https://')) {
+      if (asset.path.contains('://')) {
         throw CatalogFormatException(
-          'Asset ${asset.id} exposes source/provenance path ${asset.path}.',
+          'Asset ${asset.id} must not contain a URL: ${asset.path}.',
         );
       }
     }

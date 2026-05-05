@@ -59,6 +59,7 @@ app.*.map.json
 /macos/Podfile.lock
 /macos/Runner.xcworkspace/xcuserdata/
 
-# Local/private research inputs and generated image derivatives
+# Local/private inputs and generated image derivatives
 /tooling/
 /research/
+/assets/kansen/

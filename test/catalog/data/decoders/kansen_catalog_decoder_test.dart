@@ -22,7 +22,7 @@ void main() {
     );
     expect(
       catalog.assetsById['bismarck_zwei_portrait']?.path,
-      'research/generated_images/portraits/bismarck_zwei.webp',
+      'assets/kansen/portraits/bismarck_zwei.webp',
     );
   });
 
@@ -37,11 +37,21 @@ void main() {
     );
   });
 
-  test('rejects source paths in generated assets', () {
+  test('rejects asset paths outside the bundled prefix', () {
     final json = _catalogJson();
     final assets = json['assets']! as List<Map<String, Object?>>;
-    assets.first['path'] =
-        'research/koumakan/sample_pages/Bismarck Zwei_files/Bismarck_Zwei.png';
+    assets.first['path'] = 'some/other/dir/portraits/bismarck_zwei.webp';
+
+    expect(
+      () => KansenCatalogDecoder().decode(json),
+      throwsA(isA<CatalogFormatException>()),
+    );
+  });
+
+  test('rejects asset paths that contain a URL', () {
+    final json = _catalogJson();
+    final assets = json['assets']! as List<Map<String, Object?>>;
+    assets.first['path'] = 'https://example.com/bismarck_zwei.webp';
 
     expect(
       () => KansenCatalogDecoder().decode(json),
@@ -106,7 +116,7 @@ Map<String, Object?> _catalogJson() {
       {
         'id': 'bismarck_zwei_portrait',
         'kind': 'portrait',
-        'path': 'research/generated_images/portraits/bismarck_zwei.webp',
+        'path': 'assets/kansen/portraits/bismarck_zwei.webp',
         'width': 2048,
         'height': 1536,
         'format': 'webp',
@@ -115,7 +125,7 @@ Map<String, Object?> _catalogJson() {
       {
         'id': 'bismarck_zwei_thumbnail',
         'kind': 'thumbnail',
-        'path': 'research/generated_images/thumbnails/bismarck_zwei.webp',
+        'path': 'assets/kansen/thumbnails/bismarck_zwei.webp',
         'width': 192,
         'height': 256,
         'format': 'webp',
@@ -125,7 +135,7 @@ Map<String, Object?> _catalogJson() {
         'id': 'bismarck_zwei_skill_1_icon',
         'kind': 'skill_icon',
         'path':
-            'research/generated_images/skill_icons/bismarck_zwei_skill_1.webp',
+            'assets/kansen/skill_icons/bismarck_zwei_skill_1.webp',
         'width': 128,
         'height': 128,
         'format': 'webp',

@@ -9,7 +9,7 @@ import '../decoders/kansen_catalog_decoder.dart';
 class AssetBundleKansenCatalogRepository implements KansenCatalogRepository {
   AssetBundleKansenCatalogRepository({
     required AssetBundle assetBundle,
-    this.assetPath = 'research/generated_images/kansen_catalog.json',
+    this.assetPath = 'assets/kansen/kansen_catalog.json',
   }) : _assetBundle = assetBundle;
 
   final AssetBundle _assetBundle;

@@ -31,7 +31,7 @@ flutter:
   uses-material-design: true
 
   assets:
-    - research/generated_images/
-    - research/generated_images/portraits/
-    - research/generated_images/thumbnails/
-    - research/generated_images/skill_icons/
+    - assets/kansen/
+    - assets/kansen/portraits/
+    - assets/kansen/thumbnails/
+    - assets/kansen/skill_icons/
