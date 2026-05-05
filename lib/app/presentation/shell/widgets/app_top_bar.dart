@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:who_is_this_kansen/app/presentation/shell/app_tab.dart';
@@ -43,6 +45,10 @@ class AppTopBar extends StatelessWidget {
                 onPressed: () {
                   showCupertinoModalPopup<void>(
                     context: context,
+                    barrierColor: Colors.black.withValues(
+                      alpha: isDark ? 0.64 : 0.46,
+                    ),
+                    filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
                     builder: (context) {
                       return CupertinoActionSheet(
                         title: Text(t.topBar.appearance),

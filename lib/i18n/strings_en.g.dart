@@ -56,8 +56,8 @@ class TranslationsAppEn {
 
 	// Translations
 
-	/// en: 'Who Is This Kansen'
-	String get title => 'Who Is This Kansen';
+	/// en: 'Kansendex'
+	String get title => 'Kansendex';
 }
 
 // Path: topBar
@@ -182,7 +182,7 @@ class TranslationsCatalogEn {
 extension on Translations {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
-			'app.title' => 'Who Is This Kansen',
+			'app.title' => 'Kansendex',
 			'topBar.appearance' => 'Appearance',
 			'topBar.appearanceTooltip' => 'Appearance',
 			'topBar.themeSystem' => 'System',

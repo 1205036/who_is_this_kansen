@@ -1,4 +1,4 @@
-# Who Is This Kansen
+# Kansendex
 
 A Pokedex-style guessing game for Azur Lane kansens, built in Flutter.
 

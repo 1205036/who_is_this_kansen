@@ -1,5 +1,5 @@
 name: who_is_this_kansen
-description: "Who Is This Kansen — a Pokedex-style guessing game for Azur Lane kansens."
+description: "Kansendex — a Pokedex-style guessing game for Azur Lane kansens."
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -26,6 +26,7 @@ dev_dependencies:
   shared_preferences_platform_interface: ^2.4.2
   build_runner: ^2.15.0
   freezed: ^3.2.5
+  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true

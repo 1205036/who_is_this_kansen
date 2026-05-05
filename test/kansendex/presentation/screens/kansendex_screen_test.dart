@@ -53,6 +53,10 @@ void main() {
 
     expect(find.byType(KansendexCard), findsNothing);
     expect(find.text(t.kansendex.noUnlockedEntriesFound), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('kansendex-empty-state-scroll')),
+      findsOneWidget,
+    );
 
     await tester.enterText(
       find.byKey(const ValueKey('kansendex-search-field')),
@@ -66,6 +70,15 @@ void main() {
 
     await tester.tap(find.text(t.kansendex.segmentLocked));
     await tester.pump(const Duration(milliseconds: 320));
+
+    final searchField = tester.widget<TextField>(
+      find.byKey(const ValueKey('kansendex-search-field')),
+    );
+    expect(searchField.controller?.text, isEmpty);
+    expect(
+      tester.binding.focusManager.primaryFocus?.context?.widget,
+      isNot(isA<EditableText>()),
+    );
 
     // Search field stays in the tree but fades to hidden + becomes
     // non-interactive when the Locked tab is selected. find.ancestor

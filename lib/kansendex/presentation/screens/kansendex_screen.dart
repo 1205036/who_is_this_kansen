@@ -77,7 +77,13 @@ class _KansendexScreenState extends State<KansendexScreen> {
                   child: PageView(
                     controller: _pageController,
                     onPageChanged: (index) {
-                      setState(() => _filter = KansendexFilter.values[index]);
+                      final nextFilter = KansendexFilter.values[index];
+                      if (nextFilter == _filter) return;
+                      FocusScope.of(context).unfocus();
+                      if (_searchController.text.isNotEmpty) {
+                        _searchController.clear();
+                      }
+                      setState(() => _filter = nextFilter);
                     },
                     children: [
                       _KansendexGrid(
@@ -145,6 +151,10 @@ class _KansendexScreenState extends State<KansendexScreen> {
 
   void _changeFilter(KansendexFilter filter) {
     if (filter == _filter) return;
+    FocusScope.of(context).unfocus();
+    if (_searchController.text.isNotEmpty) {
+      _searchController.clear();
+    }
     setState(() => _filter = filter);
     _pageController.animateToPage(
       filter.index,

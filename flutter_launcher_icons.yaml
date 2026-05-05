@@ -1,0 +1,5 @@
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/kansen/app_icon/who_is_this_kansen_icon.png"
+  remove_alpha_ios: true

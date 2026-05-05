@@ -17,7 +17,11 @@ void main() {
     SharedPreferencesAsyncPlatform.instance =
         InMemorySharedPreferencesAsync.empty();
     await tester.binding.setSurfaceSize(const Size(390, 844));
-    await tester.pumpWidget(TranslationProvider(child: const KansenApp()));
+    await tester.pumpWidget(
+      TranslationProvider(
+        child: const KansenApp(bootSplashDuration: Duration.zero),
+      ),
+    );
     await tester.runAsync(() async {
       await Future<void>.delayed(const Duration(milliseconds: 100));
     });
