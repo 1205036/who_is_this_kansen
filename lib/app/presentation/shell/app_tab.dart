@@ -1,1 +1,1 @@
-enum AppTab { landing, quiz, dex }
+enum AppTab { landing, difficulty, quiz, dex }

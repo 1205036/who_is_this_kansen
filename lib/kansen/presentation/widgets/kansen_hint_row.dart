@@ -2,30 +2,41 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:who_is_this_kansen/core/theme/kansen_app_theme.dart';
 import 'package:who_is_this_kansen/kansen/presentation/models/kansen_view_model.dart';
+import 'package:who_is_this_kansen/kansen/presentation/widgets/kansen_hint_type.dart';
 
 class KansenHintRow extends StatelessWidget {
-  const KansenHintRow({super.key, required this.kansen});
+  const KansenHintRow({
+    super.key,
+    required this.kansen,
+    this.visibleHints = KansenHintType.values,
+  });
 
   final KansenViewModel kansen;
+  final List<KansenHintType> visibleHints;
 
   @override
   Widget build(BuildContext context) {
+    if (visibleHints.isEmpty) return const SizedBox.shrink();
+
     return Wrap(
       spacing: 8,
       runSpacing: 8,
       children: [
-        KansenHintChip(
-          icon: CupertinoIcons.square_stack_3d_up,
-          label: kansen.family.label,
-        ),
-        KansenHintChip(
-          icon: CupertinoIcons.star_fill,
-          label: kansen.rarityLabel,
-        ),
-        KansenHintChip(
-          icon: CupertinoIcons.shield_lefthalf_fill,
-          label: kansen.shipClass,
-        ),
+        for (final hint in visibleHints)
+          switch (hint) {
+            KansenHintType.variantFamily => KansenHintChip(
+              icon: CupertinoIcons.square_stack_3d_up,
+              label: kansen.family.label,
+            ),
+            KansenHintType.rarity => KansenHintChip(
+              icon: CupertinoIcons.star_fill,
+              label: kansen.rarityLabel,
+            ),
+            KansenHintType.shipClass => KansenHintChip(
+              icon: CupertinoIcons.shield_lefthalf_fill,
+              label: kansen.shipClass,
+            ),
+          },
       ],
     );
   }

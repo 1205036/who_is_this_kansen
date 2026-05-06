@@ -6,6 +6,7 @@ import 'package:who_is_this_kansen/quiz/presentation/bloc/quiz_prompt_state.dart
 import 'package:who_is_this_kansen/quiz/presentation/models/quiz_mode.dart';
 
 export 'package:who_is_this_kansen/quiz/presentation/bloc/quiz_prompt_state.dart';
+export 'package:who_is_this_kansen/quiz/presentation/models/quiz_difficulty.dart';
 export 'package:who_is_this_kansen/quiz/presentation/models/quiz_mode.dart';
 
 class QuizPromptCubit<T extends QuizPromptAnswer>

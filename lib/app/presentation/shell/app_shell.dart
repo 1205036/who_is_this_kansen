@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:who_is_this_kansen/app/presentation/shell/app_tab.dart';
+import 'package:who_is_this_kansen/app/presentation/shell/screens/difficulty_screen.dart';
 import 'package:who_is_this_kansen/app/presentation/shell/screens/landing_screen.dart';
 import 'package:who_is_this_kansen/app/presentation/shell/widgets/app_backdrop.dart';
 import 'package:who_is_this_kansen/app/presentation/shell/widgets/app_top_bar.dart';
@@ -34,6 +35,7 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   var _tab = AppTab.landing;
   var _quizMode = QuizMode.discovery;
+  var _quizDifficulty = QuizDifficulty.easy;
   var _toastGeneration = 0;
   KansenViewModel? _toastKansen;
   late final Future<List<KansenViewModel>> _kansenFuture;
@@ -128,13 +130,13 @@ class _AppShellState extends State<AppShell> {
                                   onDiscovery: () {
                                     setState(() {
                                       _quizMode = QuizMode.discovery;
-                                      _tab = AppTab.quiz;
+                                      _tab = AppTab.difficulty;
                                     });
                                   },
                                   onRandom: () {
                                     setState(() {
                                       _quizMode = QuizMode.random;
-                                      _tab = AppTab.quiz;
+                                      _tab = AppTab.difficulty;
                                     });
                                   },
                                   onDex: () {
@@ -143,6 +145,16 @@ class _AppShellState extends State<AppShell> {
                                 );
                               },
                             );
+                          },
+                        ),
+                        AppTab.difficulty => DifficultyScreen(
+                          key: const ValueKey('difficulty'),
+                          mode: _quizMode,
+                          onSelected: (difficulty) {
+                            setState(() {
+                              _quizDifficulty = difficulty;
+                              _tab = AppTab.quiz;
+                            });
                           },
                         ),
                         AppTab.quiz => FutureBuilder<List<KansenViewModel>>(
@@ -182,6 +194,7 @@ class _AppShellState extends State<AppShell> {
                                           }
                                           return QuizScreen(
                                             mode: _quizMode,
+                                            difficulty: _quizDifficulty,
                                             kansen: active,
                                             onCorrectAnswer: (kansen) async {
                                               final quizCubit = context

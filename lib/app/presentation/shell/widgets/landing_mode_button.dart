@@ -7,11 +7,13 @@ class LandingModeButton extends StatefulWidget {
     required this.label,
     required this.icon,
     required this.onPressed,
+    this.iconPlacement = LandingButtonIconPlacement.trailing,
   });
 
   final String label;
   final IconData icon;
   final VoidCallback? onPressed;
+  final LandingButtonIconPlacement iconPlacement;
 
   @override
   State<LandingModeButton> createState() => _LandingModeButtonState();
@@ -95,48 +97,13 @@ class _LandingModeButtonState extends State<LandingModeButton> {
                 Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 20),
-                            child: Text(
-                              widget.label.toUpperCase(),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              textAlign: TextAlign.left,
-                              style: TextStyle(
-                                color: textColor,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 0,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        DecoratedBox(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.white.withValues(
-                              alpha: enabled ? (isDark ? 0.16 : 0.52) : 0.08,
-                            ),
-                            border: Border.all(
-                              color: Colors.white.withValues(
-                                alpha: enabled ? 0.38 : 0.12,
-                              ),
-                            ),
-                          ),
-                          child: SizedBox.square(
-                            dimension: 30,
-                            child: Icon(
-                              widget.icon,
-                              color: textColor,
-                              size: 17,
-                            ),
-                          ),
-                        ),
-                      ],
+                    child: _LandingButtonContent(
+                      label: widget.label,
+                      icon: widget.icon,
+                      iconPlacement: widget.iconPlacement,
+                      enabled: enabled,
+                      isDark: isDark,
+                      textColor: textColor,
                     ),
                   ),
                 ),
@@ -145,6 +112,80 @@ class _LandingModeButtonState extends State<LandingModeButton> {
           ),
         ),
       ),
+    );
+  }
+}
+
+enum LandingButtonIconPlacement { leading, trailing }
+
+class _LandingButtonContent extends StatelessWidget {
+  const _LandingButtonContent({
+    required this.label,
+    required this.icon,
+    required this.iconPlacement,
+    required this.enabled,
+    required this.isDark,
+    required this.textColor,
+  });
+
+  final String label;
+  final IconData icon;
+  final LandingButtonIconPlacement iconPlacement;
+  final bool enabled;
+  final bool isDark;
+  final Color textColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final iconWidget = DecoratedBox(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white.withValues(
+          alpha: enabled ? (isDark ? 0.16 : 0.52) : 0.08,
+        ),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: enabled ? 0.38 : 0.12),
+        ),
+      ),
+      child: SizedBox.square(
+        dimension: 30,
+        child: Icon(icon, color: textColor, size: 17),
+      ),
+    );
+
+    final textWidget = Expanded(
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: iconPlacement == LandingButtonIconPlacement.trailing ? 20 : 10,
+        ),
+        child: Text(
+          label.toUpperCase(),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          textAlign: TextAlign.left,
+          style: TextStyle(
+            color: textColor,
+            fontSize: 18,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 0,
+          ),
+        ),
+      ),
+    );
+
+    return Row(
+      children: switch (iconPlacement) {
+        LandingButtonIconPlacement.leading => [
+          iconWidget,
+          const SizedBox(width: 12),
+          textWidget,
+        ],
+        LandingButtonIconPlacement.trailing => [
+          textWidget,
+          const SizedBox(width: 12),
+          iconWidget,
+        ],
+      },
     );
   }
 }

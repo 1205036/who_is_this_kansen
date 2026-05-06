@@ -107,6 +107,15 @@ class TranslationsQuizEn {
 	/// en: 'Dex'
 	String get modeDex => 'Dex';
 
+	/// en: 'Easy'
+	String get difficultyEasy => 'Easy';
+
+	/// en: 'Medium'
+	String get difficultyMedium => 'Medium';
+
+	/// en: 'Hard'
+	String get difficultyHard => 'Hard';
+
 	/// en: 'Type exact kansen name'
 	String get answerHint => 'Type exact kansen name';
 
@@ -211,6 +220,9 @@ extension on Translations {
 			'quiz.modeDiscovery' => 'Discovery',
 			'quiz.modeRandom' => 'Random',
 			'quiz.modeDex' => 'Dex',
+			'quiz.difficultyEasy' => 'Easy',
+			'quiz.difficultyMedium' => 'Medium',
+			'quiz.difficultyHard' => 'Hard',
 			'quiz.answerHint' => 'Type exact kansen name',
 			'quiz.submit' => 'Submit Guess',
 			'quiz.details' => 'Details',

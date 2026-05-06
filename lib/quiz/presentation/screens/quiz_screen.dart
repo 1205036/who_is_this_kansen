@@ -6,6 +6,7 @@ import 'package:who_is_this_kansen/core/theme/kansen_app_theme.dart';
 import 'package:who_is_this_kansen/i18n/strings.g.dart';
 import 'package:who_is_this_kansen/kansen/presentation/models/kansen_view_model.dart';
 import 'package:who_is_this_kansen/kansen/presentation/widgets/kansen_hint_row.dart';
+import 'package:who_is_this_kansen/kansen/presentation/widgets/kansen_hint_type.dart';
 import 'package:who_is_this_kansen/quiz/presentation/bloc/quiz_prompt_cubit.dart';
 import 'package:who_is_this_kansen/quiz/presentation/widgets/prompt_stage.dart';
 
@@ -13,6 +14,7 @@ class QuizScreen extends StatefulWidget {
   const QuizScreen({
     super.key,
     required this.mode,
+    required this.difficulty,
     required this.kansen,
     required this.onCorrectAnswer,
     required this.onNext,
@@ -20,6 +22,7 @@ class QuizScreen extends StatefulWidget {
   });
 
   final QuizMode mode;
+  final QuizDifficulty difficulty;
   final KansenViewModel kansen;
   final Future<void> Function(KansenViewModel kansen) onCorrectAnswer;
   final VoidCallback onNext;
@@ -66,6 +69,11 @@ class _QuizScreenState extends State<QuizScreen>
     final revealed = quizState.isRevealed;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final tokens = KansenThemeTokens.of(context);
+    final visibleHints = switch (widget.difficulty) {
+      QuizDifficulty.easy => KansenHintType.values,
+      QuizDifficulty.medium => const [KansenHintType.shipClass],
+      QuizDifficulty.hard => const <KansenHintType>[],
+    };
 
     if (revealed && _revealController.value == 0) {
       _revealController.forward(from: 0);
@@ -93,8 +101,18 @@ class _QuizScreenState extends State<QuizScreen>
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               child: Text(
                 switch (widget.mode) {
-                  QuizMode.discovery => t.quiz.modeDiscovery,
-                  QuizMode.random => t.quiz.modeRandom,
+                  QuizMode.discovery =>
+                    '${t.quiz.modeDiscovery} • ${switch (widget.difficulty) {
+                      QuizDifficulty.easy => t.quiz.difficultyEasy,
+                      QuizDifficulty.medium => t.quiz.difficultyMedium,
+                      QuizDifficulty.hard => t.quiz.difficultyHard,
+                    }}',
+                  QuizMode.random =>
+                    '${t.quiz.modeRandom} • ${switch (widget.difficulty) {
+                      QuizDifficulty.easy => t.quiz.difficultyEasy,
+                      QuizDifficulty.medium => t.quiz.difficultyMedium,
+                      QuizDifficulty.hard => t.quiz.difficultyHard,
+                    }}',
                 },
                 style: const TextStyle(
                   fontSize: 13,
@@ -105,8 +123,10 @@ class _QuizScreenState extends State<QuizScreen>
           ),
         ),
         const SizedBox(height: 12),
-        KansenHintRow(kansen: widget.kansen),
-        const SizedBox(height: 14),
+        if (visibleHints.isNotEmpty) ...[
+          KansenHintRow(kansen: widget.kansen, visibleHints: visibleHints),
+          const SizedBox(height: 14),
+        ],
         TextField(
           controller: _answerController,
           textInputAction: TextInputAction.done,
