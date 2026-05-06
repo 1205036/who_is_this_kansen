@@ -69,11 +69,22 @@ class _QuizScreenState extends State<QuizScreen>
     final revealed = quizState.isRevealed;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final tokens = KansenThemeTokens.of(context);
+    // Difficulty -> hint surface mapping:
+    //   Easy   = faction (alone above) + variant family + rarity + ship class
+    //   Medium = faction (alone above) + ship class
+    //   Hard   = nothing
     final visibleHints = switch (widget.difficulty) {
       QuizDifficulty.easy => KansenHintType.values,
-      QuizDifficulty.medium => const [KansenHintType.shipClass],
+      QuizDifficulty.medium => const [
+        KansenHintType.faction,
+        KansenHintType.shipClass,
+      ],
       QuizDifficulty.hard => const <KansenHintType>[],
     };
+    final showFaction = visibleHints.contains(KansenHintType.faction);
+    final otherHints = visibleHints
+        .where((hint) => hint != KansenHintType.faction)
+        .toList(growable: false);
 
     if (revealed && _revealController.value == 0) {
       _revealController.forward(from: 0);
@@ -82,49 +93,71 @@ class _QuizScreenState extends State<QuizScreen>
     return ListView(
       padding: const EdgeInsets.fromLTRB(18, 8, 18, 24),
       children: [
-        PromptStage(
-          kansen: widget.kansen,
-          revealed: revealed,
-          revealAnimation: _revealController,
-        ),
-        const SizedBox(height: 14),
-        Center(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: isDark ? 0.08 : 0.58),
-              borderRadius: BorderRadius.circular(999),
-              border: Border.all(
-                color: tokens.hairline.withValues(alpha: 0.12),
+        // AnimatedSwitcher cross-fades the entire PromptStage when the kansen
+        // changes (Submit -> Next). The outgoing stage shows the just-unlocked
+        // kansen fading away; the incoming stage starts in its awaiting state
+        // (silhouette only, no name), so the next answer is never rendered at
+        // any visible opacity. Same-kansen transitions (e.g. revealed flipping
+        // after Submit) keep the same key and don't cross-fade — the existing
+        // reveal animation handles them in place.
+        //
+        // Transition shape: longer ease-in-out fade + a subtle scale/blur
+        // breath so the handoff reads as a real transition rather than a
+        // flat opacity blend. Outgoing: fade out + gently scale down to 0.96;
+        // incoming: fade in + gently scale up from 0.96 to 1.0.
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 520),
+          reverseDuration: const Duration(milliseconds: 380),
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.easeInCubic,
+          layoutBuilder: (currentChild, previousChildren) {
+            return Stack(
+              alignment: Alignment.topCenter,
+              children: [...previousChildren, ?currentChild],
+            );
+          },
+          transitionBuilder: (child, animation) {
+            final eased = CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeInOutCubic,
+            );
+            final scale = Tween<double>(
+              begin: 0.96,
+              end: 1.0,
+            ).animate(eased);
+            final slide = Tween<Offset>(
+              begin: const Offset(0, 0.025),
+              end: Offset.zero,
+            ).animate(eased);
+            return FadeTransition(
+              opacity: eased,
+              child: SlideTransition(
+                position: slide,
+                child: ScaleTransition(scale: scale, child: child),
               ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              child: Text(
-                switch (widget.mode) {
-                  QuizMode.discovery =>
-                    '${t.quiz.modeDiscovery} • ${switch (widget.difficulty) {
-                      QuizDifficulty.easy => t.quiz.difficultyEasy,
-                      QuizDifficulty.medium => t.quiz.difficultyMedium,
-                      QuizDifficulty.hard => t.quiz.difficultyHard,
-                    }}',
-                  QuizMode.random =>
-                    '${t.quiz.modeRandom} • ${switch (widget.difficulty) {
-                      QuizDifficulty.easy => t.quiz.difficultyEasy,
-                      QuizDifficulty.medium => t.quiz.difficultyMedium,
-                      QuizDifficulty.hard => t.quiz.difficultyHard,
-                    }}',
-                },
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
+            );
+          },
+          child: PromptStage(
+            key: ValueKey('prompt-${widget.kansen.id}'),
+            kansen: widget.kansen,
+            revealed: revealed,
+            revealAnimation: _revealController,
           ),
         ),
-        const SizedBox(height: 12),
-        if (visibleHints.isNotEmpty) ...[
-          KansenHintRow(kansen: widget.kansen, visibleHints: visibleHints),
+        const SizedBox(height: 14),
+        // Faction hint sits alone on its own row in the space the mode pill
+        // used to occupy; the remaining hints (variant family / rarity /
+        // ship class — subset depending on difficulty) live on the row below.
+        // Left-aligned to match the chip row underneath.
+        if (showFaction) ...[
+          KansenHintRow(
+            kansen: widget.kansen,
+            visibleHints: const [KansenHintType.faction],
+          ),
+          const SizedBox(height: 10),
+        ],
+        if (otherHints.isNotEmpty) ...[
+          KansenHintRow(kansen: widget.kansen, visibleHints: otherHints),
           const SizedBox(height: 14),
         ],
         TextField(

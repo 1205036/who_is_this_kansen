@@ -10,6 +10,7 @@ import 'package:who_is_this_kansen/app/presentation/shell/widgets/app_top_bar.da
 import 'package:who_is_this_kansen/app/presentation/shell/widgets/unlock_toast.dart';
 import 'package:who_is_this_kansen/catalog/catalog.dart';
 import 'package:who_is_this_kansen/core/presentation/widgets/catalog_load_state.dart';
+import 'package:who_is_this_kansen/i18n/strings.g.dart';
 import 'package:who_is_this_kansen/kansen/presentation/mappers/kansen_catalog_mapper.dart';
 import 'package:who_is_this_kansen/kansen/presentation/models/kansen_view_model.dart';
 import 'package:who_is_this_kansen/kansen_detail/presentation/screens/kansen_detail_screen.dart';
@@ -62,6 +63,26 @@ class _AppShellState extends State<AppShell> {
     super.dispose();
   }
 
+  String? _topBarTitle() {
+    String modeLabel(QuizMode mode) => switch (mode) {
+      QuizMode.discovery => t.quiz.modeDiscovery,
+      QuizMode.random => t.quiz.modeRandom,
+    };
+    String difficultyLabel(QuizDifficulty difficulty) => switch (difficulty) {
+      QuizDifficulty.easy => t.quiz.difficultyEasy,
+      QuizDifficulty.medium => t.quiz.difficultyMedium,
+      QuizDifficulty.hard => t.quiz.difficultyHard,
+    };
+
+    return switch (_tab) {
+      AppTab.landing => null,
+      AppTab.difficulty => modeLabel(_quizMode),
+      AppTab.quiz =>
+        '${modeLabel(_quizMode)} • ${difficultyLabel(_quizDifficulty)}',
+      AppTab.dex => t.quiz.modeDex,
+    };
+  }
+
   void _showUnlockToast(KansenViewModel kansen) {
     final generation = _toastGeneration + 1;
     setState(() {
@@ -90,8 +111,8 @@ class _AppShellState extends State<AppShell> {
                     themeMode: widget.themeMode,
                     onThemeModeChanged: widget.onThemeModeChanged,
                     showHome: _tab != AppTab.landing,
-                    showTitle: _tab != AppTab.landing,
                     onHome: () => setState(() => _tab = AppTab.landing),
+                    title: _topBarTitle(),
                   ),
                   Expanded(
                     child: AnimatedSwitcher(

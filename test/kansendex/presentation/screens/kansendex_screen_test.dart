@@ -108,6 +108,7 @@ const _z23 = KansenViewModel(
   rarity: KansenRarity.elite,
   rarityLabel: 'Elite',
   shipClass: 'Destroyer',
+  factionLabel: 'Iron Blood',
   portraitAsset: 'assets/kansen/portraits/z28.webp',
   skillAssets: [],
 );
@@ -119,6 +120,7 @@ const _z28 = KansenViewModel(
   rarity: KansenRarity.rare,
   rarityLabel: 'Rare',
   shipClass: 'Destroyer',
+  factionLabel: 'Iron Blood',
   portraitAsset: 'assets/kansen/portraits/z28.webp',
   skillAssets: [],
 );
@@ -130,6 +132,7 @@ const _bismarck = KansenViewModel(
   rarity: KansenRarity.superRare,
   rarityLabel: 'Super Rare',
   shipClass: 'Battleship',
+  factionLabel: 'Iron Blood',
   portraitAsset: 'assets/kansen/portraits/z28.webp',
   skillAssets: [],
 );

@@ -78,19 +78,21 @@ class _KansendexCardState extends State<KansendexCard>
                     );
                   },
                 ),
-              if (widget.locked)
-                _LockedKansenOverlay(accentColor: rarityAccent),
-              Positioned(
-                left: 0,
-                top: 0,
-                bottom: 0,
-                child: RarityEdge(
-                  colors: KansenThemeColors.rarityGradient(
-                    widget.kansen.rarity,
+              if (widget.locked) const _LockedKansenOverlay(),
+              // Rarity-coloured edge accent leaks the rarity hint on locked
+              // cards, so it is rendered only for unlocked entries.
+              if (!widget.locked)
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: RarityEdge(
+                    colors: KansenThemeColors.rarityGradient(
+                      widget.kansen.rarity,
+                    ),
                   ),
                 ),
-              ),
-              if (widget.locked) _LockedCenterIcon(accentColor: rarityAccent),
+              if (widget.locked) const _LockedCenterIcon(),
               Positioned(
                 left: 10,
                 right: 10,
@@ -100,8 +102,7 @@ class _KansendexCardState extends State<KansendexCard>
                     : _UnlockedCardLabel(
                         tokens: tokens,
                         name: widget.kansen.name,
-                        metadata:
-                            '${widget.kansen.rarityLabel}  ${widget.kansen.shipClass}',
+                        metadata: widget.kansen.shipClass,
                       ),
               ),
             ],
@@ -128,9 +129,7 @@ class _LockedKansenArt extends StatelessWidget {
 }
 
 class _LockedKansenOverlay extends StatelessWidget {
-  const _LockedKansenOverlay({required this.accentColor});
-
-  final Color accentColor;
+  const _LockedKansenOverlay();
 
   @override
   Widget build(BuildContext context) {
@@ -149,9 +148,11 @@ class _LockedKansenOverlay extends StatelessWidget {
           ],
         ),
       ),
+      // Scanline uses a neutral ink colour so the overlay does not telegraph
+      // the kansen's rarity through its tint.
       child: CustomPaint(
         painter: LockedScanlinePainter(
-          lineColor: accentColor.withValues(alpha: 0.08),
+          lineColor: tokens.ink.withValues(alpha: 0.06),
         ),
       ),
     );
@@ -159,21 +160,22 @@ class _LockedKansenOverlay extends StatelessWidget {
 }
 
 class _LockedCenterIcon extends StatelessWidget {
-  const _LockedCenterIcon({required this.accentColor});
-
-  final Color accentColor;
+  const _LockedCenterIcon();
 
   @override
   Widget build(BuildContext context) {
     final tokens = KansenThemeTokens.of(context);
 
+    // Halo around the lock icon used to be tinted with the kansen's rarity
+    // accent, which gave away the rarity hint at a glance. The bloom is now a
+    // neutral ink wash so locked cards look identical regardless of rarity.
     return Center(
       child: DecoratedBox(
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: accentColor.withValues(alpha: 0.34),
+              color: tokens.ink.withValues(alpha: 0.18),
               blurRadius: 30,
               spreadRadius: 6,
             ),

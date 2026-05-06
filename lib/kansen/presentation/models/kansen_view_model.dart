@@ -9,6 +9,7 @@ class KansenViewModel implements QuizPromptAnswer {
     required this.rarity,
     required this.rarityLabel,
     required this.shipClass,
+    required this.factionLabel,
     required this.portraitAsset,
     required this.skillAssets,
   });
@@ -24,6 +25,7 @@ class KansenViewModel implements QuizPromptAnswer {
   final KansenRarity rarity;
   final String rarityLabel;
   final String shipClass;
+  final String factionLabel;
   final String portraitAsset;
   final List<String> skillAssets;
 }

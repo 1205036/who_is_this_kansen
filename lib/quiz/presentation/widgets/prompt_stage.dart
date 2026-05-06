@@ -81,9 +81,16 @@ class _PromptStageState extends State<PromptStage>
                 builder: (context, child) {
                   final pulse =
                       1 + math.sin(_idleController.value * math.pi) * 0.018;
+                  final revealValue = widget.revealAnimation.value.clamp(0, 1);
                   final artOpacity = Curves.easeInOutCubic.transform(
-                    widget.revealAnimation.value.clamp(0, 1),
+                    revealValue.toDouble(),
                   );
+                  // Only mount the colored art while a reveal is happening or
+                  // already complete. When we advance to the next prompt, the
+                  // kansen swaps in but `revealed` is false and the controller
+                  // is reset to 0 — short-circuiting here guarantees the new
+                  // kansen's full art cannot leak for even one frame.
+                  final showArt = widget.revealed || revealValue > 0;
                   return Transform.scale(
                     scale: pulse,
                     child: Stack(
@@ -92,15 +99,18 @@ class _PromptStageState extends State<PromptStage>
                         KansenSilhouetteImage(
                           asset: widget.kansen.portraitAsset,
                         ),
-                        ClipPath(
-                          clipper: RevealClipper(widget.revealAnimation.value),
-                          child: Opacity(
-                            opacity: widget.revealed ? 1 : artOpacity,
-                            child: KansenArt(
-                              asset: widget.kansen.portraitAsset,
+                        if (showArt)
+                          ClipPath(
+                            clipper: RevealClipper(
+                              widget.revealAnimation.value,
+                            ),
+                            child: Opacity(
+                              opacity: widget.revealed ? 1 : artOpacity,
+                              child: KansenArt(
+                                asset: widget.kansen.portraitAsset,
+                              ),
                             ),
                           ),
-                        ),
                         IgnorePointer(
                           child: CustomPaint(
                             painter: UnlockBurstPainter(
@@ -120,7 +130,13 @@ class _PromptStageState extends State<PromptStage>
                 left: 16,
                 right: 16,
                 bottom: 16,
+                // Key the AnimatedOpacity by kansen id so a fresh element is
+                // built when the prompt advances. Otherwise the same instance
+                // keeps interpolating opacity from 1 -> 0 over 420 ms while
+                // already showing the *next* kansen's name underneath, which
+                // leaks the answer.
                 child: AnimatedOpacity(
+                  key: ValueKey('reveal-name-${widget.kansen.id}'),
                   opacity: widget.revealed ? 1 : 0,
                   duration: const Duration(milliseconds: 420),
                   child: Text(

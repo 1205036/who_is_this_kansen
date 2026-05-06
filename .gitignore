@@ -65,10 +65,9 @@ app.*.map.json
 /research/
 /assets/kansen/
 
-# Native launcher icon image outputs are generated from private artwork.
-/android/app/src/main/res/mipmap-*/ic_launcher.png
-/android/app/src/main/res/mipmap-*/launch_image.png
-/android/app/src/main/res/drawable-nodpi/launch_image.png
-/android/app/src/main/res/drawable-night-nodpi/launch_image.png
+# Native launcher icon / splash image binaries are regenerated from private
+# artwork; never commit them. Blanket-ignore any PNG under the Android res
+# tree and the iOS asset-catalog imagesets the project uses for icon/splash.
+/android/app/src/main/res/**/*.png
 /ios/Runner/Assets.xcassets/AppIcon.appiconset/*.png
 /ios/Runner/Assets.xcassets/LaunchImage.imageset/*.png

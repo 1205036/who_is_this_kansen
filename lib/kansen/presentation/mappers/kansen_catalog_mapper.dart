@@ -23,9 +23,22 @@ class KansenCatalogMapper {
         rarity: entry.rarity,
         rarityLabel: entry.rarityLabel,
         shipClass: entry.shipTypeLabel,
+        factionLabel: _factionLabel(entry.factionId),
         portraitAsset: portraitAsset ?? '',
         skillAssets: skillAssets ?? const [],
       );
     }).toList();
+  }
+
+  // The catalog stores faction as a stable id (e.g. `iron_blood`); the UI
+  // wants the human-readable label. Title-case the underscore-separated id
+  // so future factions (e.g. `eagle_union`) work without explicit mapping.
+  String _factionLabel(String factionId) {
+    if (factionId.isEmpty) return '';
+    return factionId
+        .split('_')
+        .where((part) => part.isNotEmpty)
+        .map((part) => part[0].toUpperCase() + part.substring(1).toLowerCase())
+        .join(' ');
   }
 }

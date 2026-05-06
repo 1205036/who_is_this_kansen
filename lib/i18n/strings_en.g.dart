@@ -131,8 +131,8 @@ class TranslationsQuizEn {
 	/// en: 'Unlocked in Kansendex'
 	String get feedbackUnlocked => 'Unlocked in Kansendex';
 
-	/// en: 'Exact name required, case ignored'
-	String get feedbackIncorrect => 'Exact name required, case ignored';
+	/// en: 'Try again'
+	String get feedbackIncorrect => 'Try again';
 
 	/// en: 'Identify locked kansens to complete the Dex.'
 	String get discoveryModeHint => 'Identify locked kansens to complete the Dex.';
@@ -228,7 +228,7 @@ extension on Translations {
 			'quiz.details' => 'Details',
 			'quiz.nextPrompt' => 'Next prompt',
 			'quiz.feedbackUnlocked' => 'Unlocked in Kansendex',
-			'quiz.feedbackIncorrect' => 'Exact name required, case ignored',
+			'quiz.feedbackIncorrect' => 'Try again',
 			'quiz.discoveryModeHint' => 'Identify locked kansens to complete the Dex.',
 			'quiz.randomModeHint' => 'Randomized kansen challenge.',
 			'quiz.discoveryComplete' => 'Discovery complete.',

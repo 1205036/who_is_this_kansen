@@ -23,7 +23,7 @@
     "details": "Details",
     "nextPrompt": "Next prompt",
     "feedbackUnlocked": "Unlocked in Kansendex",
-    "feedbackIncorrect": "Exact name required, case ignored",
+    "feedbackIncorrect": "Try again",
     "discoveryModeHint": "Identify locked kansens to complete the Dex.",
     "randomModeHint": "Randomized kansen challenge.",
     "discoveryComplete": "Discovery complete."

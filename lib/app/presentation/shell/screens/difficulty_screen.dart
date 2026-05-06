@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:who_is_this_kansen/app/presentation/shell/widgets/landing_mode_button.dart';
 import 'package:who_is_this_kansen/app/presentation/shell/widgets/landing_title_art.dart';
-import 'package:who_is_this_kansen/core/theme/kansen_app_theme.dart';
 import 'package:who_is_this_kansen/i18n/strings.g.dart';
 import 'package:who_is_this_kansen/quiz/presentation/bloc/quiz_prompt_cubit.dart';
 
@@ -18,8 +17,6 @@ class DifficultyScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tokens = KansenThemeTokens.of(context);
-
     return LayoutBuilder(
       builder: (context, constraints) {
         return SingleChildScrollView(
@@ -30,21 +27,14 @@ class DifficultyScreen extends StatelessWidget {
               children: [
                 SizedBox(width: constraints.maxWidth, child: LandingTitleArt()),
                 Padding(
-                  padding: const EdgeInsets.only(top: 230),
+                  // Top padding matches `LandingScreen` (260) so the
+                  // button column lines up at the same Y on both screens.
+                  // Difficulty used to use 230 with an in-screen mode label
+                  // making up the rest; the label moved to the top bar, so
+                  // the padding has to absorb the gap on its own.
+                  padding: const EdgeInsets.only(top: 260),
                   child: Column(
                     children: [
-                      Text(
-                        switch (mode) {
-                          QuizMode.discovery => t.quiz.modeDiscovery,
-                          QuizMode.random => t.quiz.modeRandom,
-                        },
-                        style: TextStyle(
-                          color: tokens.ink.withValues(alpha: 0.76),
-                          fontSize: 15,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 14),
                       LandingModeButton(
                         key: const ValueKey('difficulty-easy-button'),
                         label: t.quiz.difficultyEasy,

@@ -1,22 +1,30 @@
+import 'dart:math';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:who_is_this_kansen/i18n/strings.g.dart';
 import 'package:who_is_this_kansen/quiz/presentation/bloc/quiz_prompt_cubit.dart';
 
 void main() {
-  test('starts on first prompt and advances in deterministic order', () {
+  setUpAll(() {
+    LocaleSettings.setLocaleSync(AppLocale.en);
+  });
+  test('cycles through every prompt without repeats before wrapping', () {
     final cubit = QuizPromptCubit<_Prompt>(
       prompts: const [_Prompt('a', 'a'), _Prompt('b', 'b'), _Prompt('c', 'c')],
+      random: Random(0),
     );
 
-    expect(cubit.state.activePrompt?.answerName, 'a');
+    final order = <String>[];
+    for (var i = 0; i < 3; i++) {
+      order.add(cubit.state.activePrompt!.id);
+      cubit.showNext();
+    }
 
-    cubit.showNext();
-    expect(cubit.state.activePrompt?.answerName, 'b');
-
-    cubit.showNext();
-    expect(cubit.state.activePrompt?.answerName, 'c');
-
-    cubit.showNext();
-    expect(cubit.state.activePrompt?.answerName, 'a');
+    // Discovery mode now shuffles, so the exact order depends on the seed,
+    // but every prompt must appear exactly once before the cycle wraps.
+    expect(order.toSet(), {'a', 'b', 'c'});
+    expect(order, hasLength(3));
+    expect(cubit.state.activePrompt?.id, order.first);
 
     cubit.close();
   });
@@ -40,7 +48,7 @@ void main() {
 
     expect(cubit.state.answerStatus, QuizAnswerStatus.correct);
     expect(cubit.state.isRevealed, isTrue);
-    expect(cubit.state.message, 'Unlocked in Kansendex');
+    expect(cubit.state.message, t.quiz.feedbackUnlocked);
 
     cubit.close();
   });
@@ -54,7 +62,7 @@ void main() {
 
     expect(cubit.state.answerStatus, QuizAnswerStatus.incorrect);
     expect(cubit.state.isRevealed, isFalse);
-    expect(cubit.state.message, 'Exact name required, case ignored');
+    expect(cubit.state.message, t.quiz.feedbackIncorrect);
 
     cubit.close();
   });
@@ -66,6 +74,34 @@ void main() {
     );
 
     expect(cubit.state.activePrompt?.answerName, 'Z28');
+
+    cubit.close();
+  });
+
+  test('discovery mode drops a kansen from the pool after recordUnlocked', () {
+    final cubit = QuizPromptCubit<_Prompt>(
+      prompts: const [
+        _Prompt('a', 'a'),
+        _Prompt('b', 'b'),
+        _Prompt('c', 'c'),
+      ],
+      random: Random(0),
+    );
+
+    final firstId = cubit.state.activePrompt!.id;
+    cubit.recordUnlocked(firstId);
+    cubit.showNext();
+
+    // After unlocking the first kansen the cubit should keep advancing only
+    // through the remaining two, in some shuffled order.
+    final remaining = <String>{};
+    for (var i = 0; i < 2; i++) {
+      remaining.add(cubit.state.activePrompt!.id);
+      cubit.showNext();
+    }
+
+    expect(remaining, {'a', 'b', 'c'}.difference({firstId}));
+    expect(remaining, hasLength(2));
 
     cubit.close();
   });

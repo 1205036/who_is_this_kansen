@@ -1,1 +1,1 @@
-enum KansenHintType { variantFamily, rarity, shipClass }
+enum KansenHintType { variantFamily, rarity, shipClass, faction }

@@ -19,17 +19,16 @@ class KansendexStickyHeader extends StatelessWidget {
       context,
     ).scaffoldBackgroundColor.withValues(alpha: isDark ? 0.86 : 0.9);
 
+    // The header height is driven by the inner content so it can shrink
+    // smoothly when the progress row is hidden on the Locked tab.
     return ClipRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
         child: DecoratedBox(
           decoration: BoxDecoration(color: backgroundColor),
-          child: SizedBox(
-            height: 108,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(18, 8, 18, 12),
-              child: child,
-            ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(18, 8, 18, 12),
+            child: child,
           ),
         ),
       ),
@@ -86,6 +85,8 @@ class _KansendexProgressHeaderState extends State<KansendexProgressHeader>
         : widget.unlockedCount / widget.totalCount;
     final percent = (progress * 100).round();
 
+    final progressVisible = widget.filter != KansendexFilter.locked;
+
     return Semantics(
       label: t.kansendex.semanticProgress(
         percent: '$percent',
@@ -93,65 +94,11 @@ class _KansendexProgressHeaderState extends State<KansendexProgressHeader>
         total: '${widget.totalCount}',
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          SizedBox(
-            height: 32,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: SizedBox(
-                    height: 14,
-                    child: TweenAnimationBuilder<double>(
-                      duration: const Duration(milliseconds: 750),
-                      curve: Curves.easeOutCubic,
-                      tween: Tween(begin: 0, end: progress),
-                      builder: (context, animatedProgress, _) {
-                        return AnimatedBuilder(
-                          animation: _glossController,
-                          builder: (context, child) {
-                            return SizedBox.expand(
-                              child: CustomPaint(
-                                key: const ValueKey('kansendex-progress-bar'),
-                                painter: KansendexProgressPainter(
-                                  progress: animatedProgress,
-                                  glossProgress: _glossController.value,
-                                  trackColor: tokens.hairline.withValues(
-                                    alpha: 0.18,
-                                  ),
-                                  fillColor: Theme.of(
-                                    context,
-                                  ).colorScheme.primary,
-                                  edgeColor: tokens.hairline.withValues(
-                                    alpha: 0.28,
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Center(
-                  child: Text(
-                    '$percent%',
-                    textAlign: TextAlign.right,
-                    style: GoogleFonts.baloo2(
-                      color: tokens.ink,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.4,
-                      fontFeatures: const [FontFeature.tabularFigures()],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
+          // Search + segment row sits above the progress bar so the
+          // controls the user actually interacts with stay closer to the
+          // top of the screen.
           SizedBox(
             height: 38,
             child: Row(
@@ -215,6 +162,79 @@ class _KansendexProgressHeaderState extends State<KansendexProgressHeader>
                   ),
                 ),
               ],
+            ),
+          ),
+          // Progress bar's contents fade out on the Locked tab but the slot
+          // stays reserved — same pattern as the search field above — so the
+          // grid below does not shift when the user switches tabs.
+          Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: SizedBox(
+              height: 32,
+              child: IgnorePointer(
+                ignoring: !progressVisible,
+                child: AnimatedOpacity(
+                  opacity: progressVisible ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 220),
+                  curve: Curves.easeOutCubic,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 14,
+                          child: TweenAnimationBuilder<double>(
+                            duration: const Duration(milliseconds: 750),
+                            curve: Curves.easeOutCubic,
+                            tween: Tween(begin: 0, end: progress),
+                            builder: (context, animatedProgress, _) {
+                              return AnimatedBuilder(
+                                animation: _glossController,
+                                builder: (context, child) {
+                                  return SizedBox.expand(
+                                    child: CustomPaint(
+                                      key: const ValueKey(
+                                        'kansendex-progress-bar',
+                                      ),
+                                      painter: KansendexProgressPainter(
+                                        progress: animatedProgress,
+                                        glossProgress: _glossController.value,
+                                        trackColor: tokens.hairline.withValues(
+                                          alpha: 0.18,
+                                        ),
+                                        fillColor: Theme.of(
+                                          context,
+                                        ).colorScheme.primary,
+                                        edgeColor: tokens.hairline.withValues(
+                                          alpha: 0.28,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Center(
+                        child: Text(
+                          '$percent%',
+                          textAlign: TextAlign.right,
+                          style: GoogleFonts.baloo2(
+                            color: tokens.ink,
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.4,
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
         ],

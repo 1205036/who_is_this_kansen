@@ -13,20 +13,37 @@ class QuizPromptCubit<T extends QuizPromptAnswer>
     extends Cubit<QuizPromptState<T>> {
   QuizPromptCubit({
     required List<T> prompts,
-    this.mode = QuizMode.discovery,
+    QuizMode mode = QuizMode.discovery,
     Set<String> unlockedKansenIds = const {},
     Random? random,
-  }) : _allPrompts = List.unmodifiable(prompts),
+  }) : this._(
+         mode: mode,
+         unlockedKansenIds: unlockedKansenIds,
+         shuffledOrder: List<T>.unmodifiable(
+           [...prompts]..shuffle(random ?? Random()),
+         ),
+       );
+
+  // The shuffled order is computed once and lives on the cubit so subsequent
+  // showNext() calls keep iterating through the same randomized sequence.
+  // Discovery mode filters that order by `_unlockedKansenIds` on every
+  // advance, so each correctly-guessed kansen is naturally dropped from the
+  // pool without disturbing the relative order of the remainder.
+  QuizPromptCubit._({
+    required this.mode,
+    required Set<String> unlockedKansenIds,
+    required List<T> shuffledOrder,
+  }) : _shuffledOrder = shuffledOrder,
        _unlockedKansenIds = {...unlockedKansenIds},
        super(
          QuizPromptState<T>(
            prompts: List.unmodifiable(
-             _buildInitialPrompts(
-               prompts,
-               mode,
-               unlockedKansenIds,
-               random ?? Random(),
-             ),
+             switch (mode) {
+               QuizMode.discovery => shuffledOrder
+                   .where((prompt) => !unlockedKansenIds.contains(prompt.id))
+                   .toList(),
+               QuizMode.random => shuffledOrder,
+             },
            ),
            message: switch (mode) {
              QuizMode.discovery => t.quiz.discoveryModeHint,
@@ -35,7 +52,7 @@ class QuizPromptCubit<T extends QuizPromptAnswer>
          ),
        );
 
-  final List<T> _allPrompts;
+  final List<T> _shuffledOrder;
   final QuizMode mode;
   final Set<String> _unlockedKansenIds;
 
@@ -93,24 +110,11 @@ class QuizPromptCubit<T extends QuizPromptAnswer>
   List<T> _activePrompts() {
     return switch (mode) {
       QuizMode.discovery => List.unmodifiable(
-        _allPrompts.where((prompt) => !_unlockedKansenIds.contains(prompt.id)),
+        _shuffledOrder.where(
+          (prompt) => !_unlockedKansenIds.contains(prompt.id),
+        ),
       ),
       QuizMode.random => state.prompts,
-    };
-  }
-
-  static List<T> _buildInitialPrompts<T extends QuizPromptAnswer>(
-    List<T> prompts,
-    QuizMode mode,
-    Set<String> unlockedKansenIds,
-    Random random,
-  ) {
-    return switch (mode) {
-      QuizMode.discovery =>
-        prompts
-            .where((prompt) => !unlockedKansenIds.contains(prompt.id))
-            .toList(),
-      QuizMode.random => [...prompts]..shuffle(random),
     };
   }
 }

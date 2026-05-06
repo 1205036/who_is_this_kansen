@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:who_is_this_kansen/core/presentation/widgets/surface_buttons.dart';
+import 'package:who_is_this_kansen/core/theme/kansen_app_theme.dart';
 import 'package:who_is_this_kansen/i18n/strings.g.dart';
 
 class AppTopBar extends StatelessWidget {
@@ -12,14 +13,18 @@ class AppTopBar extends StatelessWidget {
     required this.onThemeModeChanged,
     required this.onHome,
     required this.showHome,
-    required this.showTitle,
+    this.title,
   });
 
   final ThemeMode themeMode;
   final ValueChanged<ThemeMode> onThemeModeChanged;
   final VoidCallback onHome;
   final bool showHome;
-  final bool showTitle;
+
+  // Optional context label rendered between the home and theme buttons.
+  // Used to surface things like the active quiz mode/difficulty or the
+  // "Dex" label so individual screens don't need to draw their own header.
+  final String? title;
 
   IconData get themeIcon {
     return switch (themeMode) {
@@ -32,6 +37,7 @@ class AppTopBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final tokens = KansenThemeTokens.of(context);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(18, 10, 18, 8),
@@ -53,7 +59,31 @@ class AppTopBar extends StatelessWidget {
                   ),
                 ),
               ),
-              const Spacer(),
+              Expanded(
+                child: Center(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 220),
+                    switchInCurve: Curves.easeOutCubic,
+                    switchOutCurve: Curves.easeInCubic,
+                    child: title == null
+                        ? const SizedBox.shrink(
+                            key: ValueKey('top-bar-title-empty'),
+                          )
+                        : Text(
+                            title!,
+                            key: ValueKey('top-bar-title-$title'),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: tokens.ink.withValues(alpha: 0.86),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.2,
+                            ),
+                          ),
+                  ),
+                ),
+              ),
               SurfaceIconButton(
                 onPressed: () {
                   showCupertinoModalPopup<void>(
@@ -107,28 +137,6 @@ class AppTopBar extends StatelessWidget {
                 size: 32,
               ),
             ],
-          ),
-          AnimatedSize(
-            duration: const Duration(milliseconds: 180),
-            curve: Curves.easeOutCubic,
-            child: showTitle
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 8),
-                      Text(
-                        t.app.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0,
-                        ),
-                      ),
-                    ],
-                  )
-                : const SizedBox.shrink(),
           ),
         ],
       ),

@@ -36,6 +36,10 @@ class KansenHintRow extends StatelessWidget {
               icon: CupertinoIcons.shield_lefthalf_fill,
               label: kansen.shipClass,
             ),
+            KansenHintType.faction => KansenHintChip(
+              icon: CupertinoIcons.flag_fill,
+              label: kansen.factionLabel,
+            ),
           },
       ],
     );

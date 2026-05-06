@@ -40,6 +40,7 @@ const _z23 = KansenViewModel(
   rarity: KansenRarity.elite,
   rarityLabel: 'Elite',
   shipClass: 'Destroyer',
+  factionLabel: 'Iron Blood',
   portraitAsset: 'assets/kansen/portraits/z28.webp',
   skillAssets: [],
 );
