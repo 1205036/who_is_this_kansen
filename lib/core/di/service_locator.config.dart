@@ -27,6 +27,7 @@ import '../../progress/domain/repositories/unlock_progress_repository.dart'
 import '../../progress/domain/usecases/load_unlock_progress.dart' as _i595;
 import '../../progress/domain/usecases/unlock_kansen.dart' as _i521;
 import '../../progress/presentation/bloc/unlock_progress_cubit.dart' as _i763;
+import '../../quiz/presentation/bloc/quiz_prompt_cubit_factory.dart' as _i267;
 import '../../settings/data/repositories/shared_preferences_app_settings_repository.dart'
     as _i21;
 import '../../settings/domain/repositories/app_settings_repository.dart'
@@ -52,6 +53,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i281.AssetBundle>(() => appModule.assetBundle);
     gh.lazySingleton<_i719.KansenCatalogMapper>(
       () => const _i719.KansenCatalogMapper(),
+    );
+    gh.lazySingleton<_i267.QuizPromptCubitFactory>(
+      () => const _i267.QuizPromptCubitFactory(),
     );
     gh.lazySingleton<_i745.UnlockProgressRepository>(
       () => _i586.SharedPreferencesUnlockProgressRepository(

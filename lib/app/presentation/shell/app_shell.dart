@@ -16,6 +16,7 @@ import 'package:who_is_this_kansen/kansen_detail/presentation/screens/kansen_det
 import 'package:who_is_this_kansen/kansendex/presentation/screens/kansendex_screen.dart';
 import 'package:who_is_this_kansen/progress/progress.dart';
 import 'package:who_is_this_kansen/quiz/presentation/bloc/quiz_prompt_cubit.dart';
+import 'package:who_is_this_kansen/quiz/presentation/bloc/quiz_prompt_cubit_factory.dart';
 import 'package:who_is_this_kansen/quiz/presentation/screens/quiz_screen.dart';
 
 class AppShell extends StatefulWidget {
@@ -182,7 +183,7 @@ class _AppShellState extends State<AppShell> {
                               builder: (context, progressState) {
                                 return BlocProvider(
                                   create: (_) =>
-                                      QuizPromptCubit<KansenViewModel>(
+                                      getIt<QuizPromptCubitFactory>().create(
                                         prompts: kansen,
                                         mode: _quizMode,
                                         unlockedKansenIds: progressState
