@@ -1,6 +1,9 @@
+import 'package:injectable/injectable.dart';
+
 import '../entities/unlock_progress.dart';
 import '../repositories/unlock_progress_repository.dart';
 
+@injectable
 class UnlockKansen {
   const UnlockKansen(this._repository);
 

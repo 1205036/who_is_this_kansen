@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:who_is_this_kansen/app/presentation/splash/kansendex_boot_splash.dart';
 import 'package:who_is_this_kansen/app/presentation/shell/app_shell.dart';
+import 'package:who_is_this_kansen/core/di/service_locator.dart';
 import 'package:who_is_this_kansen/core/theme/kansen_app_theme.dart';
 import 'package:who_is_this_kansen/i18n/strings.g.dart';
 import 'package:who_is_this_kansen/settings/settings.dart';
@@ -26,19 +26,7 @@ class _KansenAppState extends State<KansenApp> {
   @override
   void initState() {
     super.initState();
-    final settingsRepository = SharedPreferencesAppSettingsRepository(
-      preferences: SharedPreferencesAsync(),
-    );
-    _themeModeCubit = ThemeModeCubit(
-      loadThemeModePreference: LoadThemeModePreference(settingsRepository),
-      saveThemeModePreference: SaveThemeModePreference(settingsRepository),
-    )..load();
-  }
-
-  @override
-  void dispose() {
-    _themeModeCubit.close();
-    super.dispose();
+    _themeModeCubit = getIt<ThemeModeCubit>()..load();
   }
 
   @override

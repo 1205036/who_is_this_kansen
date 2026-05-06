@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:injectable/injectable.dart';
 import 'package:who_is_this_kansen/settings/domain/entities/app_theme_mode.dart';
 import 'package:who_is_this_kansen/settings/domain/usecases/load_theme_mode_preference.dart';
 import 'package:who_is_this_kansen/settings/domain/usecases/save_theme_mode_preference.dart';
@@ -7,6 +8,7 @@ import 'package:who_is_this_kansen/settings/presentation/bloc/theme_mode_state.d
 
 export 'package:who_is_this_kansen/settings/presentation/bloc/theme_mode_state.dart';
 
+@lazySingleton
 class ThemeModeCubit extends Cubit<ThemeModeState> {
   ThemeModeCubit({
     required LoadThemeModePreference loadThemeModePreference,

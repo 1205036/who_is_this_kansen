@@ -5,7 +5,9 @@ import 'package:shared_preferences_platform_interface/shared_preferences_async_p
 import 'package:who_is_this_kansen/progress/progress.dart';
 
 void main() {
-  const storageKey = 'test.unlocked_ids';
+  // Mirrors the production storage key in the repository so the in-memory
+  // shared-prefs platform can pre-load values under the same key.
+  const storageKey = 'unlock_progress.unlocked_kansen_ids';
 
   setUp(() {
     SharedPreferencesAsyncPlatform.instance =
@@ -15,7 +17,6 @@ void main() {
   test('loads empty progress when storage has no value', () async {
     final repository = SharedPreferencesUnlockProgressRepository(
       preferences: SharedPreferencesAsync(),
-      storageKey: storageKey,
     );
 
     final progress = await repository.loadProgress();
@@ -30,7 +31,6 @@ void main() {
         });
     final repository = SharedPreferencesUnlockProgressRepository(
       preferences: SharedPreferencesAsync(),
-      storageKey: storageKey,
     );
 
     final progress = await repository.loadProgress();
@@ -42,7 +42,6 @@ void main() {
     final preferences = SharedPreferencesAsync();
     final repository = SharedPreferencesUnlockProgressRepository(
       preferences: preferences,
-      storageKey: storageKey,
     );
 
     await repository.saveProgress(

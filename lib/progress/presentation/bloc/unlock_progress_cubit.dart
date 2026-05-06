@@ -1,8 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:injectable/injectable.dart';
 import 'package:who_is_this_kansen/progress/domain/usecases/load_unlock_progress.dart';
 import 'package:who_is_this_kansen/progress/domain/usecases/unlock_kansen.dart';
 import 'package:who_is_this_kansen/progress/presentation/bloc/unlock_progress_state.dart';
 
+@lazySingleton
 class UnlockProgressCubit extends Cubit<UnlockProgressState> {
   UnlockProgressCubit({
     required LoadUnlockProgress loadUnlockProgress,

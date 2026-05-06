@@ -79,7 +79,10 @@ class _KansenDetailScreenState extends State<KansenDetailScreen> {
                           ),
                         ),
                         const SizedBox(height: 10),
-                        KansenHintRow(kansen: widget.kansen),
+                        KansenHintRow(
+                          kansen: widget.kansen,
+                          startRevealed: true,
+                        ),
                         const SizedBox(height: 12),
                         Row(
                           children: widget.kansen.skillAssets.map((asset) {

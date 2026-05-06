@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:who_is_this_kansen/app/presentation/shell/app_tab.dart';
 import 'package:who_is_this_kansen/app/presentation/shell/screens/difficulty_screen.dart';
 import 'package:who_is_this_kansen/app/presentation/shell/screens/landing_screen.dart';
@@ -9,6 +7,7 @@ import 'package:who_is_this_kansen/app/presentation/shell/widgets/app_backdrop.d
 import 'package:who_is_this_kansen/app/presentation/shell/widgets/app_top_bar.dart';
 import 'package:who_is_this_kansen/app/presentation/shell/widgets/unlock_toast.dart';
 import 'package:who_is_this_kansen/catalog/catalog.dart';
+import 'package:who_is_this_kansen/core/di/service_locator.dart';
 import 'package:who_is_this_kansen/core/presentation/widgets/catalog_load_state.dart';
 import 'package:who_is_this_kansen/i18n/strings.g.dart';
 import 'package:who_is_this_kansen/kansen/presentation/mappers/kansen_catalog_mapper.dart';
@@ -45,22 +44,9 @@ class _AppShellState extends State<AppShell> {
   @override
   void initState() {
     super.initState();
-    _kansenFuture = LoadKansenCatalog(
-      AssetBundleKansenCatalogRepository(assetBundle: rootBundle),
-    )().then(const KansenCatalogMapper().fromCatalog);
-    final progressRepository = SharedPreferencesUnlockProgressRepository(
-      preferences: SharedPreferencesAsync(),
-    );
-    _unlockProgressCubit = UnlockProgressCubit(
-      loadUnlockProgress: LoadUnlockProgress(progressRepository),
-      unlockKansen: UnlockKansen(progressRepository),
-    )..load();
-  }
-
-  @override
-  void dispose() {
-    _unlockProgressCubit.close();
-    super.dispose();
+    _kansenFuture = getIt<LoadKansenCatalog>()()
+        .then(getIt<KansenCatalogMapper>().fromCatalog);
+    _unlockProgressCubit = getIt<UnlockProgressCubit>()..load();
   }
 
   String? _topBarTitle() {

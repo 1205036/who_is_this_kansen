@@ -1,6 +1,8 @@
+import 'package:injectable/injectable.dart';
 import 'package:who_is_this_kansen/catalog/catalog.dart';
 import 'package:who_is_this_kansen/kansen/presentation/models/kansen_view_model.dart';
 
+@lazySingleton
 class KansenCatalogMapper {
   const KansenCatalogMapper();
 
