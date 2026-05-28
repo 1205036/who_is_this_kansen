@@ -48,7 +48,11 @@ class _KansenDetailScreenState extends State<KansenDetailScreen> {
                 right: 12,
                 child: IconButton.filledTonal(
                   tooltip: t.detail.close,
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () {
+                    if (Navigator.of(context).canPop()) {
+                      Navigator.of(context).pop();
+                    }
+                  },
                   icon: const Icon(CupertinoIcons.xmark),
                 ),
               ),

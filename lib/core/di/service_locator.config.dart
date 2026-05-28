@@ -14,11 +14,13 @@ import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 import 'package:shared_preferences/shared_preferences.dart' as _i460;
 
+import '../../app/presentation/notifications/unlock_toast_cubit.dart' as _i823;
 import '../../catalog/data/datasources/asset_bundle_kansen_catalog_repository.dart'
     as _i749;
 import '../../catalog/domain/repositories/kansen_catalog_repository.dart'
     as _i389;
 import '../../catalog/domain/usecases/load_kansen_catalog.dart' as _i542;
+import '../../catalog/presentation/kansen_catalog_provider.dart' as _i719;
 import '../../kansen/presentation/mappers/kansen_catalog_mapper.dart' as _i719;
 import '../../progress/data/repositories/shared_preferences_unlock_progress_repository.dart'
     as _i586;
@@ -47,6 +49,7 @@ extension GetItInjectableX on _i174.GetIt {
   }) {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
     final appModule = _$AppModule();
+    gh.lazySingleton<_i823.UnlockToastCubit>(() => _i823.UnlockToastCubit());
     gh.lazySingleton<_i460.SharedPreferencesAsync>(
       () => appModule.sharedPreferences,
     );
@@ -97,6 +100,12 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i763.UnlockProgressCubit(
         loadUnlockProgress: gh<_i595.LoadUnlockProgress>(),
         unlockKansen: gh<_i521.UnlockKansen>(),
+      ),
+    );
+    gh.lazySingleton<_i719.KansenCatalogProvider>(
+      () => _i719.KansenCatalogProvider(
+        gh<_i542.LoadKansenCatalog>(),
+        gh<_i719.KansenCatalogMapper>(),
       ),
     );
     return this;

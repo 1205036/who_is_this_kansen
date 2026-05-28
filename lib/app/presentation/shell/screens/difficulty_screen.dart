@@ -1,19 +1,23 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:who_is_this_kansen/app/presentation/router/app_routes.dart';
 import 'package:who_is_this_kansen/app/presentation/shell/widgets/landing_mode_button.dart';
 import 'package:who_is_this_kansen/app/presentation/shell/widgets/landing_title_art.dart';
 import 'package:who_is_this_kansen/i18n/strings.g.dart';
 import 'package:who_is_this_kansen/quiz/presentation/bloc/quiz_prompt_cubit.dart';
 
 class DifficultyScreen extends StatelessWidget {
-  const DifficultyScreen({
-    super.key,
-    required this.mode,
-    required this.onSelected,
-  });
+  const DifficultyScreen({super.key, required this.mode});
 
   final QuizMode mode;
-  final ValueChanged<QuizDifficulty> onSelected;
+
+  void _selectDifficulty(BuildContext context, QuizDifficulty difficulty) {
+    context.go(
+      AppRoutes.quiz,
+      extra: QuizSessionExtra(mode: mode, difficulty: difficulty),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +44,7 @@ class DifficultyScreen extends StatelessWidget {
                         label: t.quiz.difficultyEasy,
                         icon: Icons.auto_awesome,
                         iconPlacement: LandingButtonIconPlacement.leading,
-                        onPressed: () => onSelected(QuizDifficulty.easy),
+                        onPressed: () => _selectDifficulty(context, QuizDifficulty.easy),
                       ),
                       const SizedBox(height: 16),
                       LandingModeButton(
@@ -48,7 +52,7 @@ class DifficultyScreen extends StatelessWidget {
                         label: t.quiz.difficultyMedium,
                         icon: CupertinoIcons.circle_lefthalf_fill,
                         iconPlacement: LandingButtonIconPlacement.leading,
-                        onPressed: () => onSelected(QuizDifficulty.medium),
+                        onPressed: () => _selectDifficulty(context, QuizDifficulty.medium),
                       ),
                       const SizedBox(height: 16),
                       LandingModeButton(
@@ -56,7 +60,7 @@ class DifficultyScreen extends StatelessWidget {
                         label: t.quiz.difficultyHard,
                         icon: CupertinoIcons.flame_fill,
                         iconPlacement: LandingButtonIconPlacement.leading,
-                        onPressed: () => onSelected(QuizDifficulty.hard),
+                        onPressed: () => _selectDifficulty(context, QuizDifficulty.hard),
                       ),
                     ],
                   ),

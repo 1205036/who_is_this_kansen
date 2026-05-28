@@ -6,51 +6,20 @@ import 'package:who_is_this_kansen/core/theme/kansen_app_theme.dart';
 import 'package:who_is_this_kansen/i18n/strings.g.dart';
 import 'package:who_is_this_kansen/kansendex/presentation/widgets/kansendex_empty_state.dart';
 
-class KansendexBootSplashGate extends StatefulWidget {
-  const KansendexBootSplashGate({
+class KansendexBootSplashScreen extends StatefulWidget {
+  const KansendexBootSplashScreen({
     super.key,
-    required this.duration,
-    required this.child,
+    this.duration = const Duration(milliseconds: 1800),
+    this.onComplete,
   });
 
+  /// How long the splash stays on screen before [onComplete] fires. Tests
+  /// can pass `Duration.zero` to skip the animation pause.
   final Duration duration;
-  final Widget child;
 
-  @override
-  State<KansendexBootSplashGate> createState() =>
-      _KansendexBootSplashGateState();
-}
-
-class _KansendexBootSplashGateState extends State<KansendexBootSplashGate> {
-  late var _showSplash = widget.duration > Duration.zero;
-
-  @override
-  void initState() {
-    super.initState();
-    if (!_showSplash) return;
-    Future<void>.delayed(widget.duration, () {
-      if (!mounted) return;
-      setState(() => _showSplash = false);
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 320),
-      switchInCurve: Curves.easeOutCubic,
-      switchOutCurve: Curves.easeInCubic,
-      child: _showSplash
-          ? const KansendexBootSplashScreen(
-              key: ValueKey('kansendex-boot-splash'),
-            )
-          : widget.child,
-    );
-  }
-}
-
-class KansendexBootSplashScreen extends StatefulWidget {
-  const KansendexBootSplashScreen({super.key});
+  /// Called once `duration` has elapsed and the widget is still mounted.
+  /// The router uses this to navigate to the landing route.
+  final VoidCallback? onComplete;
 
   @override
   State<KansendexBootSplashScreen> createState() =>
@@ -73,6 +42,22 @@ class _KansendexBootSplashScreenState extends State<KansendexBootSplashScreen>
       vsync: this,
       duration: const Duration(milliseconds: 340),
     )..repeat(reverse: true);
+    if (widget.onComplete != null) {
+      if (widget.duration <= Duration.zero) {
+        // Fire after the first frame is rendered so the navigation runs
+        // without depending on Timer scheduling. This keeps `Duration.zero`
+        // deterministic under widget-test fake clocks.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          widget.onComplete?.call();
+        });
+      } else {
+        Future<void>.delayed(widget.duration, () {
+          if (!mounted) return;
+          widget.onComplete?.call();
+        });
+      }
+    }
   }
 
   @override

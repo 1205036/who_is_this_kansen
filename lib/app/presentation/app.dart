@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:who_is_this_kansen/app/presentation/splash/kansendex_boot_splash.dart';
-import 'package:who_is_this_kansen/app/presentation/shell/app_shell.dart';
+import 'package:go_router/go_router.dart';
+import 'package:who_is_this_kansen/app/presentation/router/app_router.dart';
 import 'package:who_is_this_kansen/core/di/service_locator.dart';
 import 'package:who_is_this_kansen/core/theme/kansen_app_theme.dart';
 import 'package:who_is_this_kansen/i18n/strings.g.dart';
+import 'package:who_is_this_kansen/progress/progress.dart';
 import 'package:who_is_this_kansen/settings/settings.dart';
 
 class KansenApp extends StatefulWidget {
@@ -21,21 +22,34 @@ class KansenApp extends StatefulWidget {
 }
 
 class _KansenAppState extends State<KansenApp> {
+  late final GoRouter _router;
   late final ThemeModeCubit _themeModeCubit;
+  late final UnlockProgressCubit _unlockProgressCubit;
 
   @override
   void initState() {
     super.initState();
     _themeModeCubit = getIt<ThemeModeCubit>()..load();
+    _unlockProgressCubit = getIt<UnlockProgressCubit>()..load();
+    _router = createAppRouter(splashDuration: widget.bootSplashDuration);
+  }
+
+  @override
+  void dispose() {
+    _router.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: _themeModeCubit,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: _themeModeCubit),
+        BlocProvider.value(value: _unlockProgressCubit),
+      ],
       child: BlocBuilder<ThemeModeCubit, ThemeModeState>(
         builder: (context, state) {
-          return MaterialApp(
+          return MaterialApp.router(
             title: t.app.title,
             debugShowCheckedModeBanner: false,
             themeMode: state.materialThemeMode,
@@ -48,13 +62,7 @@ class _KansenAppState extends State<KansenApp> {
               GlobalCupertinoLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
             ],
-            home: KansendexBootSplashGate(
-              duration: widget.bootSplashDuration,
-              child: AppShell(
-                themeMode: state.materialThemeMode,
-                onThemeModeChanged: context.read<ThemeModeCubit>().setThemeMode,
-              ),
-            ),
+            routerConfig: _router,
           );
         },
       ),
