@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:who_is_this_kansen/core/feature_flags/presentation/debug_feature_flags_menu.dart';
 
 class LandingTitleArt extends StatefulWidget {
   const LandingTitleArt({super.key});
@@ -32,7 +34,7 @@ class _LandingTitleArtState extends State<LandingTitleArt>
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
+    final art = AnimatedBuilder(
       animation: _motionController,
       builder: (context, child) {
         final phase = _motionController.value * math.pi * 2;
@@ -54,6 +56,15 @@ class _LandingTitleArtState extends State<LandingTitleArt>
         fit: BoxFit.contain,
         filterQuality: FilterQuality.high,
       ),
+    );
+
+    // Long-press the logo to open the debug feature-flag menu. The gesture is
+    // only attached under kDebugMode, so release builds ship no handler at all.
+    if (!kDebugMode) return art;
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onLongPress: () => openDebugFeatureFlagsMenu(context),
+      child: art,
     );
   }
 }

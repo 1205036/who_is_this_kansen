@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:who_is_this_kansen/app/presentation/router/app_router.dart';
 import 'package:who_is_this_kansen/core/di/service_locator.dart';
+import 'package:who_is_this_kansen/core/feature_flags/domain/feature_flags_repository.dart';
 import 'package:who_is_this_kansen/core/theme/kansen_app_theme.dart';
 import 'package:who_is_this_kansen/i18n/strings.g.dart';
 import 'package:who_is_this_kansen/progress/progress.dart';
@@ -31,6 +34,7 @@ class _KansenAppState extends State<KansenApp> {
     super.initState();
     _themeModeCubit = getIt<ThemeModeCubit>()..load();
     _unlockProgressCubit = getIt<UnlockProgressCubit>()..load();
+    unawaited(getIt<FeatureFlagsRepository>().load());
     _router = createAppRouter(splashDuration: widget.bootSplashDuration);
   }
 

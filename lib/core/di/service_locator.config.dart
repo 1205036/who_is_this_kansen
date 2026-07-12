@@ -39,6 +39,9 @@ import '../../settings/domain/usecases/load_theme_mode_preference.dart'
 import '../../settings/domain/usecases/save_theme_mode_preference.dart'
     as _i209;
 import '../../settings/presentation/bloc/theme_mode_cubit.dart' as _i250;
+import '../feature_flags/data/shared_preferences_feature_flags_repository.dart'
+    as _i559;
+import '../feature_flags/domain/feature_flags_repository.dart' as _i497;
 import 'app_module.dart' as _i460;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -59,6 +62,11 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i267.QuizPromptCubitFactory>(
       () => const _i267.QuizPromptCubitFactory(),
+    );
+    gh.lazySingleton<_i497.FeatureFlagsRepository>(
+      () => _i559.SharedPreferencesFeatureFlagsRepository(
+        gh<_i460.SharedPreferencesAsync>(),
+      ),
     );
     gh.lazySingleton<_i745.UnlockProgressRepository>(
       () => _i586.SharedPreferencesUnlockProgressRepository(
